@@ -21,8 +21,15 @@ dataSpine = load(fullfile(spineFile(1).folder,spineFile(1).name));
 uniqueLarvaeID = unique(dataSpine(:,2));
 
 minTimesPerID = arrayfun(@(x) min(dataSpine(dataSpine(:,2)==x,3)), uniqueLarvaeID);
+initCoordXLarvae = arrayfun(@(x,y) mean(dataSpine(dataSpine(:,3)==x & dataSpine(:,2)==y,4:2:end)),minTimesPerID,uniqueLarvaeID);
+initCoordYLarvae = arrayfun(@(x,y) mean(dataSpine(dataSpine(:,3)==x & dataSpine(:,2)==y,5:2:end)),minTimesPerID,uniqueLarvaeID);
 maxTimesPerID = arrayfun(@(x) max(dataSpine(dataSpine(:,2)==x,3)), uniqueLarvaeID);
-tableIDMinMax = array2table([uniqueLarvaeID,minTimesPerID,maxTimesPerID],'VariableNames',{'id','minTime','maxTime'});
+lastCoordXLarvae = arrayfun(@(x,y) mean(dataSpine(dataSpine(:,3)==x & dataSpine(:,2)==y,4:2:end)),maxTimesPerID,uniqueLarvaeID);
+lastCoordYLarvae = arrayfun(@(x,y) mean(dataSpine(dataSpine(:,3)==x & dataSpine(:,2)==y,5:2:end)),maxTimesPerID,uniqueLarvaeID);
+
+tableLarvaeIDMinMax = array2table([uniqueLarvaeID,minTimesPerID,initCoordXLarvae,initCoordYLarvae,maxTimesPerID,lastCoordXLarvae,lastCoordYLarvae],'VariableNames',{'id','minTime','xCoordInit','yCoordInit','maxTime','xCoordEnd','yCoordEnd'});
+
+orderedLarvae = automaticLarvaeIDUnification(tableLarvaeIDMinMax);
 
 plotTrajectoryLarvae(dataSpine,uniqueLarvaeID)
 
