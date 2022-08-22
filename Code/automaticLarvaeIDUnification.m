@@ -1,6 +1,6 @@
 function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification(tableSummaryLarvaeFeatures)
 
-    rangeTime = 10; %seconds
+    rangeTime = 30; %seconds
     xyCoordRange = 30; %pixel distance
     listIDConcat = zeros(size(tableSummaryLarvaeFeatures,1),2);
     listIDConcat(:,1) = tableSummaryLarvaeFeatures.id(:);
@@ -20,12 +20,9 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
             listIDConcat(nID,2)=idCandidatesTime(distanceTimeCandidates);
         end
         if sum(distanceTimeCandidates)>1
-
             [~,idMin]=min(pdist2(xyCoord1,xyCoordCandidates));
             listIDConcat(nID,2)=idCandidatesTime(idMin);
         end
-        
-
     end
 
     %% Apply threshold by area and morphology in repeated assignations

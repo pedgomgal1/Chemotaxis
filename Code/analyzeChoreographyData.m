@@ -76,8 +76,14 @@ for nIterations = 1:length(orderedLarvae)
 end
 cellOutlinesLarvae(:,1)= num2cell(labelsOutlineUpdated(:));
 
+%% Save larvae temporal image sequence
+if ~exist(fullfile(outlineFile(1).folder,'temporalImageSequenceLarvae'),'file')  
+    folder2save = fullfile(outlineFile(1).folder,'temporalImageSequenceLarvae');
+    mkdir(folder2save)
+    saveTemporalImageSequence(cellOutlinesLarvae,dataSpine,unique(newCellIDsSpine),folder2save)
+end
 
-plotTrajectoryLarvae(dataSpine,cellOutlinesLarvae,unique(newCellIDsSpine))
+plotTrajectoryLarvae(dataSpine,unique(newCellIDsSpine))
 
 % joinUniqueIDLarve()
 % removeFakeLarvae()
@@ -86,29 +92,3 @@ plotTrajectoryLarvae(dataSpine,cellOutlinesLarvae,unique(newCellIDsSpine))
 %calculateAgilityIndex
 %calculateLarvaeSpeed
 
-
-
-for nFiles = 1:size(filesChoreography,1)
-
-    selectedFeature = featureName{nFiles};
-    switch selectedFeature
-        case {'x'}
-
-        case {'y'}
-
-        case {'morpwidth'}
-
-        case {'midline'}
-
-        case {'dir'}
-
-        case {'cast'}
-
-        case {'crabspeed'}
-
-        otherwise
-
-    end
-
-end
-    
