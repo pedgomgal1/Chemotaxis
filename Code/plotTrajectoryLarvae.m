@@ -1,4 +1,4 @@
-function plotTrajectoryLarvae(dataSpine,larvaeIDs)
+function plotTrajectoryLarvae(dataSpine,larvaeIDs,imgInit)
 
     allLarvae=unique(larvaeIDs);
     cmap = colorcube(length(allLarvae));
@@ -13,6 +13,11 @@ function plotTrajectoryLarvae(dataSpine,larvaeIDs)
 
     larvaAppearedSpine = zeros(length(allLarvae),1);
 
+    h1=figure;
+    imshow(imgInit)
+
+    hold on
+
     for sec = 0:round(maxTime)
         
         for nLarva = 1:length(allLarvae)
@@ -25,9 +30,10 @@ function plotTrajectoryLarvae(dataSpine,larvaeIDs)
 
                [~,idMinSpine]=min(pdist2(sec,selectedSpineRows(:,1)));
 
-               if mod(sec,3)==0
-                    plot(selectedSpineRows(idMinSpine,2:2:end),selectedSpineRows(idMinSpine,3:2:end),'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',1)
-               end
+%                if mod(sec,3)==0
+                   figure(h1)
+                   plot(selectedSpineRows(idMinSpine,3:2:end)*10,selectedSpineRows(idMinSpine,2:2:end)*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',1)
+%                end
                larvaAppearedSpine(nLarva)=larvaAppearedSpine(nLarva)+1;
                
 %                if larvaAppeared(nLarva)==1

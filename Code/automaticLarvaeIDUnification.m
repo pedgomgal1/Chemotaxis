@@ -1,7 +1,6 @@
-function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification(tableSummaryLarvaeFeatures)
+function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification(tableSummaryLarvaeFeatures,rangeTime, xyCoordRange)
 
-    rangeTime = 30; %seconds
-    xyCoordRange = 30; %pixel distance
+
     listIDConcat = zeros(size(tableSummaryLarvaeFeatures,1),2);
     listIDConcat(:,1) = tableSummaryLarvaeFeatures.id(:);
 
@@ -76,12 +75,13 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         nLab=nLab+1;
     end
 
-    %% Get summary table to return
-    arrayIDs = ones(size(tableSummaryLarvaeFeatures,1),1);
-    cellIDs=cellfun(@(x) ismember(tableSummaryLarvaeFeatures.id,x).*arrayIDs.*min(x), cellUniqLabels, 'UniformOutput', false);
-    newCellIDs=sum(cat(3,cellIDs{:}),3);
+    %% Get summary table to return   
+    auxIDs = tableSummaryLarvaeFeatures.id;
+    for nC = 1:length(cellUniqLabels)
+        auxIDs(ismember(auxIDs,[cellUniqLabels{nC}])) = min([cellUniqLabels{nC}]);
+    end
     
-    [newOrdIds,ordNew]=sort(newCellIDs);
+    [newOrdIds,ordNew]=sort(auxIDs);
     newOrderTable = tableSummaryLarvaeFeatures(ordNew,:);
     newOrderTable.id=newOrdIds;
 
