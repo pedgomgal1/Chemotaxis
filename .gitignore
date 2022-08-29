@@ -62,3 +62,4 @@ data/*
 *.dat
 *.spine
 *.outline
+*.fig

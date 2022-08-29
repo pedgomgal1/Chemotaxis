@@ -36,6 +36,9 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         [normDistArea,minDifAreas] = min(pdist2(tableSummaryLarvaeFeatures.area(assignedID)/tableSummaryLarvaeFeatures.area(assignedID),tableSummaryLarvaeFeatures.area(conflictIDs)/tableSummaryLarvaeFeatures.area(assignedID)));
         [normDistMorp,minDifMorp] = min(pdist2(tableSummaryLarvaeFeatures.morpWidth(assignedID)/tableSummaryLarvaeFeatures.morpWidth(assignedID),tableSummaryLarvaeFeatures.morpWidth(conflictIDs)/tableSummaryLarvaeFeatures.morpWidth(assignedID)));
 
+%%% ******** INCLUDE DIRECTION CONDITION IN CASE DIFFERENCE BETWEEN AREAS / MORPHO IS NOT
+%%% EVIDENTE *********
+
         if minDifMorp==minDifAreas
             finalID = conflictLabels(minDifAreas);
         else
@@ -74,6 +77,7 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         end  
         nLab=nLab+1;
     end
+
 
     %% Get summary table to return   
     auxIDs = tableSummaryLarvaeFeatures.id;

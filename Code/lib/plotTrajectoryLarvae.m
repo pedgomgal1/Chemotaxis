@@ -1,4 +1,4 @@
-function saveTemporalImageSequence(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder2save,imgInit)
+function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,booleanSave)
 
     allLarvae=unique(larvaeIDs);
     cmap = colorcube(length(allLarvae));
@@ -7,23 +7,17 @@ function saveTemporalImageSequence(dataOutline,dataSpine,xFile,yFile,larvaeIDs,f
 
     labelTimeOutline = cell2mat(dataOutline(:,1:2));
 
-    maxTime=max(unique(labelTimeOutline(:,2)));
-
     larvaAppearedOutline = zeros(length(allLarvae),1);
    
 
-    for sec = 0:round(maxTime)
+    for sec = round(minTime):round(maxTime)
         h1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
 
         imshow(imgInit)
         hold on;
         for nLarva = 1:length(allLarvae)
-            allRowsSpineLarva = dataSpine(dataSpine(:,2)==allLarvae(nLarva),3:end);
-            
-            if any(round(allRowsSpineLarva(:,1))==sec)
-               
-            end
-            
+%             allRowsSpineLarva = dataSpine(dataSpine(:,2)==allLarvae(nLarva),3:end);
+                       
             allRowsOutlineLarva = dataOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
             selectedRowsOutlineLabelTime = labelTimeOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
             if any(round(selectedRowsOutlineLabelTime(:,2))==sec) 
@@ -61,7 +55,11 @@ function saveTemporalImageSequence(dataOutline,dataSpine,xFile,yFile,larvaeIDs,f
     
                    xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec,2);
                    yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec,2);
-                   plot(yCoordsPrev*10,xCoordsPrev*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',0.5)
+                   lineSize = 0.5;
+                   if sec==round(maxTime)
+                        lineSize = 1;
+                   end
+                   plot(yCoordsPrev*10,xCoordsPrev*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',lineSize)
 
                    text(yCoordsPrev(end)*10,xCoordsPrev(end)*10,[' ' num2str(allLarvae(nLarva))],'FontSize',3)
                 end
@@ -70,12 +68,21 @@ function saveTemporalImageSequence(dataOutline,dataSpine,xFile,yFile,larvaeIDs,f
             
 
         end
-        exportgraphics(gca,fullfile(folder2save,[num2str(sec) '.png']),'Resolution',300)
 
-%         imwrite(getframe(gcf).cdata,fullfile(folder2save,[num2str(sec) '.png']))
-        hold off 
-        close all
+        if booleanSave==1
+
+            exportgraphics(gca,fullfile(folder2save,[num2str(sec) '.png']),'Resolution',300)
+    
+    %         imwrite(getframe(gcf).cdata,fullfile(folder2save,[num2str(sec) '.png']))
+            hold off 
+            if sec== round(maxTime)
+                savefig(fullfile(folder2save,'finalTrajectories.fig'))
+            end
+            close all
+        end
+        
     end
-
+    
+    
 
 end
