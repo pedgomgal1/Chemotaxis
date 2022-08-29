@@ -10,8 +10,6 @@ filesChoreography = dir(fullfile(dirPath,'*.dat'));
 outlineFile = dir(fullfile(dirPath,'*.outline'));
 spineFile = dir(fullfile(dirPath,'*.spine'));
 
-
-
 fileNames={filesChoreography.name};
 splittedNames = cellfun(@(x) strsplit(x,'.'),fileNames,'UniformOutput',false);
 featureName = cellfun(@(x) x{2},splittedNames,'UniformOutput',false); 
@@ -27,7 +25,7 @@ uniqueIdOutline=unique(vertcat(cellOutlinesLarvae{:,1}));
 
 dataSpine = load(fullfile(spineFile(1).folder,spineFile(1).name));
 
-%load larvae area
+%load larvae properties
 idArea = cellfun(@(x) strcmp(x,'area'),featureName);
 idMorpwidth = cellfun(@(x) strcmp(x,'morpwidth'),featureName);
 idSpeed = cellfun(@(x) strcmp(x,'speed'),featureName);
@@ -43,7 +41,10 @@ yFile = load(fullfile(filesChoreography(idY).folder,filesChoreography(idY).name)
 dirFile = load(fullfile(filesChoreography(idDir).folder,filesChoreography(idDir).name));
 
 
-%% Reorganized unique IDs
+%% Reorganize unique IDs
+
+%%table summarizing larvae properties to compare times, position and
+%%geometrical properties
 uniqueId = unique(xFile(:,2));
 
 minTimesPerID = arrayfun(@(x) min(xFile(xFile(:,2)==x,3)), uniqueId);
@@ -57,55 +58,61 @@ morpwidLarvae = arrayfun(@(x) median(morpwidFile(morpwidFile(:,2)==x,4)), unique
 
 
 tableSummaryFeatures = array2table([uniqueId,minTimesPerID,initCoordXLarvae,initCoordYLarvae,maxTimesPerID,lastCoordXLarvae,lastCoordYLarvae,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','xCoordInit','yCoordInit','maxTime','xCoordEnd','yCoordEnd','area','morpWidth'});
+[tableSummaryFeatures,cellOutlinesLarvaeUpdated,dataSpineUpdated,xFileUpdated,yFileUpdated] = reorganizeUniqueIDs(tableSummaryFeatures,cellOutlinesLarvae,dataSpine,xFile,yFile);
 
-orderedLarvae={}; stopIterations=1;
-%thresolds to look for unique IDs    
-rangeTime = 30; %seconds
-xyCoordRange = 10; %pixel distance
-while stopIterations>0
-    nLab1 = size(tableSummaryFeatures,1);
-    [tableSummaryFeatures,orderedLarvae{stopIterations}] = automaticLarvaeIDUnification(tableSummaryFeatures,rangeTime,xyCoordRange);
-    nLab2 = size(tableSummaryFeatures,1);
-    if nLab1==nLab2
-        stopIterations=0;
-    else
-        stopIterations=stopIterations+1;
-    end
-end
-rangeTime = 100; %seconds
-xyCoordRange = 20; %pixel distance
-[tableSummaryFeatures,orderedLarvae{end+1}] = automaticLarvaeIDUnification(tableSummaryFeatures,rangeTime,xyCoordRange);
-
-%updateLabels
-dataSpineUpdated=dataSpine;
-labelsOutlineUpdated = vertcat(cellOutlinesLarvae{:,1});
-xFileIDUpdated = xFile;
-for nIterations = 1:length(orderedLarvae)
-    ordLarvae = orderedLarvae{nIterations};
-
-    for nC = 1:length(ordLarvae)
-        dataSpineUpdated(ismember(dataSpineUpdated(:,2),[ordLarvae{nC}]),2) = min([ordLarvae{nC}]);
-        labelsOutlineUpdated(ismember(labelsOutlineUpdated,[ordLarvae{nC}])) = min([ordLarvae{nC}]);
-        xFileIDUpdated(ismember(xFileIDUpdated(:,2),[ordLarvae{nC}]),2) = min([ordLarvae{nC}]);
-    end
-end
-cellOutlinesLarvae(:,1)= num2cell(labelsOutlineUpdated(:));
-xFile(:,2)=xFileIDUpdated(:,2);
-yFile(:,2)=xFileIDUpdated(:,2);
 
 imgName = dir(fullfile(dirPath,'*.png'));
 imgInit = imread(fullfile(imgName.folder, imgName.name));
 
 
 %% Save larvae temporal image sequence
-% if ~exist(fullfile(outlineFile(1).folder,'temporalImageSequenceLarvae'),'file')  
+if ~exist(fullfile(outlineFile(1).folder,'temporalImageSequenceLarvae'),'file') 
+    minTimeTraj = 0; %sec
+    maxTimeTraj = 600; %sec
+    booleanSave = 1; %save==1, not save == 0 
     folder2save = fullfile(outlineFile(1).folder,'temporalImageSequenceLarvae');
     mkdir(folder2save)
-    saveTemporalImageSequence(cellOutlinesLarvae,dataSpineUpdated,xFile,yFile,unique(xFile(:,2)),folder2save,imgInit)
-% end
+    plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,dataSpineUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,booleanSave)
+end
+
+%Correcting some trajectories. Removing short trajectories or appearing at
+%the plate border
+borderIds = tableSummaryFeatures.xCoordInit < 20 | tableSummaryFeatures.xCoordInit > 210 | tableSummaryFeatures.yCoordInit < 5 | tableSummaryFeatures.yCoordInit > 165;
+tableSummaryFeaturesFiltered =tableSummaryFeatures;
+tableSummaryFeaturesFiltered(borderIds,:) = [];
+
+minTimeTraj = 600; %sec
+maxTimeTraj = 600; %sec
+booleanSave = 0;
+
+% ids2check = (tableSummaryFeaturesFiltered.maxTime - tableSummaryFeaturesFiltered.minTime)<maxTimeTraj*(0.8);
+% plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,dataSpineUpdated,xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id(ids2check),'',imgInit,minTimeTraj,maxTimeTraj,booleanSave)
+
+splitOrSelectDir = 'Yes';
+while strcmp(splitOrSelectDir,'Yes')
+    splitOrSelectDir = questdlg('Do you want to combine IDs?', '','Yes','No, all right','Yes');
+    
+    if ~strcmp(splitOrSelectDir,'Yes')
+        break
+    end
+    answer = inputdlg('Enter ALL space-separated IDs to be combined: (e.g.: 1 3 4; 2 3 4; 6 7 8):','Combine IDs', [1 50]);
+    if ~isempty(answer)
+        ids2Combine = str2num(answer{1});
+    end
+end
+
+%Calculate average speed
+
+%Polar histogram with trajectories
+angleInitFinalPoint = atan2(tableSummaryFeaturesFiltered.yCoordEnd - tableSummaryFeaturesFiltered.yCoordInit, tableSummaryFeaturesFiltered.xCoordEnd - tableSummaryFeaturesFiltered.xCoordInit);
+figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+polarhistogram(angleInitFinalPoint,12);
+figure;plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,dataSpineUpdated,xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id,'',imgInit,minTimeTraj,maxTimeTraj,booleanSave)
 
 
-% plotTrajectoryLarvae(dataSpine,unique(newCellIDsSpine),imgInit)
+
+
+%polar plot
 
 % joinUniqueIDLarve()
 % removeFakeLarvae()
