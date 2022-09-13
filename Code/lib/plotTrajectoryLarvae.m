@@ -5,10 +5,10 @@ function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder
     randIDs = randperm(length(allLarvae),length(allLarvae));
     cmapRand = cmap(randIDs,:);
 
-    labelTimeOutline = cell2mat(dataOutline(:,1:2));
-
-    larvaAppearedOutline = zeros(length(allLarvae),1);
-   
+    if ~isempty(dataOutline)
+        labelTimeOutline = cell2mat(dataOutline(:,1:2));
+        larvaAppearedOutline = zeros(length(allLarvae),1);
+    end
 
     for sec = round(minTime):round(maxTime)
         h1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
@@ -17,9 +17,14 @@ function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder
         hold on;
         for nLarva = 1:length(allLarvae)
 %             allRowsSpineLarva = dataSpine(dataSpine(:,2)==allLarvae(nLarva),3:end);
-                       
-            allRowsOutlineLarva = dataOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
-            selectedRowsOutlineLabelTime = labelTimeOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
+                     
+            if ~isempty(dataOutline)
+                allRowsOutlineLarva = dataOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
+                selectedRowsOutlineLabelTime = labelTimeOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
+            else
+                selectedRowsOutlineLabelTime=[1,-1];
+            end
+
             if any(round(selectedRowsOutlineLabelTime(:,2))==sec) 
                larvaAppearedOutline(nLarva)=larvaAppearedOutline(nLarva)+1;
                roundOutlineSeconds = round(selectedRowsOutlineLabelTime(:,2));

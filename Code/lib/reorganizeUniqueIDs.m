@@ -1,4 +1,4 @@
-function [tableSummaryFeatures,cellOutlinesLarvae,dataSpine,xFile,yFile]=reorganizeUniqueIDs(tableSummaryFeatures,cellOutlinesLarvae,dataSpine,xFile,yFile)
+function [tableSummaryFeatures,orderedLarvae]=reorganizeUniqueIDs(tableSummaryFeatures)
 
     orderedLarvae={}; stopIterations=1;
     %thresolds to look for unique IDs    
@@ -17,11 +17,6 @@ function [tableSummaryFeatures,cellOutlinesLarvae,dataSpine,xFile,yFile]=reorgan
     rangeTime = 100; %seconds
     xyCoordRange = 20; %pixel distance
     [tableSummaryFeatures,orderedLarvae{end+1}] = automaticLarvaeIDUnification(tableSummaryFeatures,rangeTime,xyCoordRange);
-    
-    %updateLabels
-    [dataSpine,cellOutlinesLarvae,xFile,yFile]=updateLabelsFile(orderedLarvae,dataSpine,cellOutlinesLarvae,xFile,yFile);
-    
-
 
 
 end
