@@ -1,4 +1,4 @@
-function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,booleanSave)
+function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,maxLengthLarvaeTrajectory,booleanSave)
 
     allLarvae=unique(larvaeIDs);
     cmap = colorcube(length(allLarvae));
