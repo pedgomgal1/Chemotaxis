@@ -18,10 +18,10 @@ featureName = cellfun(@(x) x{2},splittedNames,'UniformOutput',false);
 %% Load larvae spine and outlines
 %load larvae properties
 idArea = cellfun(@(x) strcmp(x,'area'),featureName);
+idCast = cellfun(@(x) strcmp(x,'cast'),featureName);
 % idSpeed = cellfun(@(x) strcmp(x,'speed'),featureName);
 idX = cellfun(@(x) strcmp(x,'x'),featureName);
 idY = cellfun(@(x) strcmp(x,'y'),featureName);
-idDir = cellfun(@(x) strcmp(x,'dir'),featureName);
 
 areaFile = load(fullfile(filesChoreography(idArea).folder,filesChoreography(idArea).name));
 % speedFile = load(fullfile(filesChoreography(idSpeed).folder,filesChoreography(idSpeed).name));
@@ -39,9 +39,12 @@ if ~isempty(outlineFile)
     dataSpine = load(fullfile(spineFile(1).folder,spineFile(1).name));
     idMorpwidth = cellfun(@(x) strcmp(x,'morpwidth'),featureName);
     morpwidFile = load(fullfile(filesChoreography(idMorpwidth).folder,filesChoreography(idMorpwidth).name));
+    castFile = load(fullfile(filesChoreography(idCast).folder,filesChoreography(idCast).name));
+
 
 else
     dataSpine=[];
+    castFile = [];
     cellOutlinesLarvae=[];
     morpwidFile = areaFile;
 end
@@ -70,6 +73,7 @@ tableSummaryFeatures(borderIds,:) = [];
 xFile(ismember(xFile(:,2),idsBoder2remove),:)=[];
 yFile(ismember(yFile(:,2),idsBoder2remove),:)=[];
 
+
 %%%% UNIFY LARVAE LABELS %%%%
 [tableSummaryFeatures,orderedLarvae] = reorganizeUniqueIDs(tableSummaryFeatures);
 [xFileUpdated]=updateLabelsFile(orderedLarvae,xFile);
@@ -78,6 +82,11 @@ yFile(ismember(yFile(:,2),idsBoder2remove),:)=[];
 if ~isempty(outlineFile)
     [dataSpineUpdated]=updateLabelsFile(orderedLarvae,dataSpine);
     [cellOutlinesLarvaeUpdated]=updateOutlinesFile(orderedLarvae,cellOutlinesLarvae);
+    castFile(ismember(castFile(:,2),idsBoder2remove),:)=[];
+
+    dataSpineUpdated(ismember(dataSpineUpdated(:,2),idsBoder2remove),:)=[];
+    cellOutlinesLarvaeUpdated(ismember(vertcat(cellOutlinesLarvaeUpdated{:,1}),idsBoder2remove),:)=[];
+    castFileUpdated =updateOutlinesFile(orderedLarvae,castFile);
 end
 
 %%%% LOAD INIT RAW IMAGE %%%%
@@ -114,6 +123,7 @@ yFileUpdated(ismember(yFileUpdated(:,2),idsBoder2remove),:)=[];
 if ~isempty(outlineFile)
     dataSpineUpdated(ismember(dataSpineUpdated(:,2),idsBoder2remove),:)=[];
     cellOutlinesLarvaeUpdated(ismember(vertcat(cellOutlinesLarvaeUpdated{:,1}),idsBoder2remove),:)=[];
+    castFileUpdated(ismember(castFileUpdated(:,2),idsBoder2remove),:)=[];
 end
 
 
@@ -132,72 +142,14 @@ else
 end
 
 
-%%%% MANUALLY CORRECT LARVAE TRAJECTORIES %%%%
-
-combineIDSelection = 'Yes';
-while strcmp(combineIDSelection,'Yes')
-    combineIDSelection = questdlg('Do you want to combine IDs?', '','Yes','No, all right','Yes');
-    
-    if ~strcmp(combineIDSelection,'Yes')
-        break
-    end
-    answer = inputdlg('Enter ALL space-separated IDs to be combined: (e.g.: 1 3 4; 2 3 4; 6 7 8):','Combine IDs', [1 50]);
-    if ~isempty(answer)
-        try
-            ids2Combine = str2num(answer{1});
-            allIds = tableSummaryFeaturesFiltered.id;
-            allIdsOrdered = mat2cell(allIds);
-            for nComb = 1:size(ids2Combine,2)
-                idMin = min(ids2Combine(nComb,:));
-                allIdsOrdered{allIds==idMin}=ids2Combine(nComb,:);
-            end
-            [xFileUpdated]=updateLabelsFile(allIdsOrdered,xFileUpdated);
-            [yFileUpdated]=updateLabelsFile(allIdsOrdered,yFileUpdated);
-
-            tableSummaryFeaturesFiltered=updateTableProperties(tableSummaryFeaturesFiltered,allIdsOrdered);
-            if ~isempty(outlineFile)
-                [dataSpineUpdated]=updateLabelsFile(orderedLarvae,dataSpineUpdated);
-                [cellOutlinesLarvaeUpdated]=updateOutlinesFile(orderedLarvae,cellOutlinesLarvaeUpdated);
-            end
-        catch
-            disp('Something is wrong, try again.')
-        end
-    end
-end
-
-%Final plot
-plotTrajectoryLarvae([],[],xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id,'',imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
-removeIDSelection = 'Yes';
-while strcmp(removeIDSelection,'Yes')
-    removeIDSelection = questdlg('Do you want to remove any ID?', '','Yes','No, all right','Yes');
-    if ~strcmp(removeIDSelection,'Yes')
-        break
-    end
-    answer = inputdlg('Enter ALL space-separated IDs to be combined: (e.g.: 1 3 4):','remove IDs', [1 50]);
-     
-    if ~isempty(answer)
-        try
-            ids2Remove = str2num(answer{1});
-            xFileUpdated(ismember(xFileUpdated(:,2),ids2Remove),:)=[];
-            yFileUpdated(ismember(yFileUpdated(:,2),ids2Remove),:)=[];
-            tableSummaryFeaturesFiltered(ismember(tableSummaryFeaturesFiltered.id,ids2Remove),:) = [];
-            
-            plotTrajectoryLarvae([],[],xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id,'',imgInit,minTimeTraj,maxTimeTraj,booleanSave)
-
-            if ~isempty(outlineFile)
-                dataSpineUpdated(ismember(dataSpineUpdated(:,2),ids2Remove),:)=[];
-                cellOutlinesLarvaeUpdated(ismember(vertcat(cellOutlinesLarvaeUpdated{:,1}),ids2Remove),:)=[];
-            end
-        catch
-            disp('Something is wrong, try again.')
-        end
-    end
-end
+%%%% MANUALLY CORRECT LARVAE TRAJECTORIES & SAVE %%%%
 
 if ~isempty(outlineFile)
-    save(fullfile(dirPath,'choreographyData_PostCuration.mat'),'xFileUpdated','yFileUpdated','tableSummaryFeaturesFiltered','dataSpineUpdated','cellOutlinesLarvaeUpdated')
+    [tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,cellOutlinesLarvaeUpdated,dataSpineUpdated]=correctManuallyTrajectories(tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,cellOutlinesLarvaeUpdated,dataSpineUpdated,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave);
+    save(fullfile(dirPath,'choreographyData_Postprocessed.mat'),'xFileUpdated','yFileUpdated','castFileUpdated','tableSummaryFeaturesFiltered','dataSpineUpdated','cellOutlinesLarvaeUpdated')
 else
-    save(fullfile(dirPath,'choreographyData_PostCuration.mat'),'xFileUpdated','yFileUpdated','tableSummaryFeaturesFiltered')
+    [tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,~,~]=correctManuallyTrajectories(tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,[],[],imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave);
+    save(fullfile(dirPath,'choreographyData_Postprocessed.mat'),'xFileUpdated','yFileUpdated','tableSummaryFeaturesFiltered')
 end
 
 
