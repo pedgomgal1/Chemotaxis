@@ -1,24 +1,24 @@
 %% INDIVIDUAL MEASUREMENTS %%
 
 %select the file to process
+[fileName, pathFile]=uigetfile('select file containing processed tracking information','*.mat');
+load(fullfile(pathFile,fileName))
 
-%calculate average speed. Only measure the time intervals when the larva is not
-%stacked. 
+%% calculate average speed. 
+%Only measure the time intervals when the larva is not stacked. 
 
-%measure number of casting in average
 
-%calculate how many times the larva change the trajectory left-right and
-%right-left
+%% measure number of casting in average
+[averageNumberOfCastings]=calculateAverageNumberOfCastings(updatedCastFile,xFile,yFile);
 
-%proportion of displacement left - right
+%% calculate how many times the larva change the trajectory left-right and right-left
+% calculateAverageChangeOfDirection()
 
-%proportion of larvae heading the odor.
+%% Proportion of displacement left - right
+
+%% Proportion of larvae heading the odor.
 
 %plot trajectories
-
-%how fast a larva turn around from right direction to left. 
-
-%Number of turnings
 
 
 %% GLOBAL PHENOTYPE MEASUREMENT %%

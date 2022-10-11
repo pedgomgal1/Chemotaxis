@@ -1,4 +1,4 @@
-function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,maxLengthLarvaeTrajectory,booleanSave)
+function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,maxLengthLarvaeTrajectory,booleanSave)
 
     allLarvae=unique(larvaeIDs);
     cmap = colorcube(length(allLarvae));
@@ -11,13 +11,12 @@ function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder
     end
 
     for sec = round(minTime):round(maxTime)
-        h1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+        h1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
 
         imshow(imgInit)
         hold on;
         for nLarva = 1:length(allLarvae)
-%             allRowsSpineLarva = dataSpine(dataSpine(:,2)==allLarvae(nLarva),3:end);
-                     
+
             if ~isempty(dataOutline)
                 allRowsOutlineLarva = dataOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
                 selectedRowsOutlineLabelTime = labelTimeOutline(labelTimeOutline(:,1)==allLarvae(nLarva),:);
@@ -44,29 +43,29 @@ function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder
                xCoordsLarva = xFile(xFile(:,2)==allLarvae(nLarva),3:4);
                yCoordsLarva = yFile(yFile(:,2)==allLarvae(nLarva),3:4);
 
-               xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec,2);
-               yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec,2);
+               xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec & (xCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
+               yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec & (yCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
                plot(yCoordsPrev*10,xCoordsPrev*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',1)
 
-%                roundSpineSeconds = round(allRowsSpineLarva(:,1));
-%                selectedSpineRows = allRowsSpineLarva(roundSpineSeconds==sec,:);
-%                [~,idMinSpine]=min(pdist2(sec,selectedSpineRows(:,1)));
-%                plot(selectedSpineRows(idMinSpine,2:2:end),selectedSpineRows(idMinSpine,3:2:end),'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',0.5)
             else
                 if any(round(selectedRowsOutlineLabelTime(:,2))<sec) 
             
                    xCoordsLarva = xFile(xFile(:,2)==allLarvae(nLarva),3:4);
                    yCoordsLarva = yFile(yFile(:,2)==allLarvae(nLarva),3:4);
-    
-                   xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec,2);
-                   yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec,2);
+
+                   xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec & (xCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
+                   yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec & (yCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
+
                    lineSize = 0.5;
                    if sec==round(maxTime)
                         lineSize = 1;
                    end
-                   plot(yCoordsPrev*10,xCoordsPrev*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',lineSize)
+                   try
+                        plot(yCoordsPrev*10,xCoordsPrev*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',lineSize)
+                        text(yCoordsPrev(end)*10,xCoordsPrev(end)*10,[' ' num2str(allLarvae(nLarva))],'FontSize',3)
+                   catch
 
-                   text(yCoordsPrev(end)*10,xCoordsPrev(end)*10,[' ' num2str(allLarvae(nLarva))],'FontSize',3)
+                   end
                 end
             end
 
@@ -77,7 +76,6 @@ function plotTrajectoryLarvae(dataOutline,dataSpine,xFile,yFile,larvaeIDs,folder
         if booleanSave==1
 
             exportgraphics(gca,fullfile(folder2save,[num2str(sec) '.png']),'Resolution',300)
-    
     %         imwrite(getframe(gcf).cdata,fullfile(folder2save,[num2str(sec) '.png']))
             hold off 
             if sec== round(maxTime)

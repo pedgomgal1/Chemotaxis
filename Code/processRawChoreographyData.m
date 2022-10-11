@@ -55,19 +55,20 @@ end
 uniqueId = unique(xFile(:,2));
 
 minTimesPerID = arrayfun(@(x) min(xFile(xFile(:,2)==x,3)), uniqueId);
-initCoordXLarvae = arrayfun(@(x,y) mean(xFile(xFile(:,3)==x & xFile(:,2)==y,4)),minTimesPerID,uniqueId);
-initCoordYLarvae = arrayfun(@(x,y) mean(yFile(yFile(:,3)==x & yFile(:,2)==y,4)),minTimesPerID,uniqueId);
+initCoordXLarvae = arrayfun(@(x,y) xFile(xFile(:,3)==x & xFile(:,2)==y,4),minTimesPerID,uniqueId);
+initCoordYLarvae = arrayfun(@(x,y) yFile(yFile(:,3)==x & yFile(:,2)==y,4),minTimesPerID,uniqueId);
 maxTimesPerID = arrayfun(@(x) max(xFile(xFile(:,2)==x,3)), uniqueId);
 lastCoordXLarvae = arrayfun(@(x,y) mean(xFile(xFile(:,3)==x & xFile(:,2)==y,4)),maxTimesPerID,uniqueId);
 lastCoordYLarvae = arrayfun(@(x,y) mean(yFile(yFile(:,3)==x & yFile(:,2)==y,4)),maxTimesPerID,uniqueId);
 medianAreaLarvae = arrayfun(@(x) median(areaFile(areaFile(:,2)==x,4)), uniqueId);
 morpwidLarvae = arrayfun(@(x) median(morpwidFile(morpwidFile(:,2)==x,4)), uniqueId);
 
+[angleInitVector,angleLastVector]=calculateInitAndLastDirectionPerID(xFile,yFile,minTimesPerID,maxTimesPerID,uniqueId);
 
-tableSummaryFeatures = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd''yCoordInit','yCoordEnd','area','morpWidth'});
+tableSummaryFeatures = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth'});
 
 %%%%% REMOVE X BORDERS LARVAE %%%%% (most likely artifacts)
-borderIds = tableSummaryFeatures.xCoordInit < 20 | tableSummaryFeatures.xCoordInit > 210;
+borderIds = tableSummaryFeatures.yCoordInit < 35 | tableSummaryFeatures.yCoordInit > 190;
 idsBoder2remove = tableSummaryFeatures.id(borderIds);
 tableSummaryFeatures(borderIds,:) = [];
 xFile(ismember(xFile(:,2),idsBoder2remove),:)=[];
@@ -86,7 +87,7 @@ if ~isempty(outlineFile)
 
     dataSpineUpdated(ismember(dataSpineUpdated(:,2),idsBoder2remove),:)=[];
     cellOutlinesLarvaeUpdated(ismember(vertcat(cellOutlinesLarvaeUpdated{:,1}),idsBoder2remove),:)=[];
-    castFileUpdated =updateOutlinesFile(orderedLarvae,castFile);
+    castFileUpdated =updateLabelsFile(orderedLarvae,castFile);
 end
 
 %%%% LOAD INIT RAW IMAGE %%%%
@@ -97,23 +98,23 @@ imgInit = imread(fullfile(imgName.folder, imgName.name));
 
 
 %%%% SAVE LARVAE TRAJECTORY (IMAGE SEQUENCE)
-% if ~exist(fullfile(xFile(1).folder,'temporalImageSequenceLarvae'),'file') 
-%     minTimeTraj = 0; %seconds
-%     maxTimeTraj = 600; %seconds
-%     maxLengthLarvaeTrajectory = 60; %seconds
-%     booleanSave = 1; %save==1, not save == 0 
-%     folder2save = fullfile(xFile(1).folder,'temporalImageSequenceLarvae');
-%     mkdir(folder2save)
-%     if ~isempty(outlineFile)
-%         plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,dataSpineUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
-%     else
-%         plotTrajectoryLarvae([],[],xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
-%     end
-% end
+if ~exist(fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvae'),'file') 
+    minTimeTraj = 0; %seconds
+    maxTimeTraj = 600; %seconds
+    maxLengthLarvaeTrajectory = 60; %seconds
+    booleanSave = 1; %save==1, not save == 0 
+    folder2save = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvae');
+    mkdir(folder2save)
+    if ~isempty(outlineFile)
+        plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
+    else
+        plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
+    end
+end
 
 %Correcting some trajectories. Removing isolated trajectories appearing at
 %Y borders, and short trajectories.
-borderIds = tableSummaryFeatures.yCoordInit < 5 | tableSummaryFeatures.yCoordInit > 165;
+borderIds = tableSummaryFeatures.xCoordInit < 10 | tableSummaryFeatures.xCoordInit > 160;
 tableSummaryFeaturesFiltered =tableSummaryFeatures;
 idsBoder2remove = tableSummaryFeaturesFiltered.id(borderIds);
 tableSummaryFeaturesFiltered(borderIds,:) = [];
@@ -133,12 +134,12 @@ maxTimeTraj = 600; %sec
 maxLengthLarvaeTrajectory = 600; %sec
 booleanSave = 0;
 
-ids2check = (tableSummaryFeaturesFiltered.maxTime - tableSummaryFeaturesFiltered.minTime)<maxTimeTraj*(0.8);
+ids2check = (tableSummaryFeaturesFiltered.maxTime - tableSummaryFeaturesFiltered.minTime)<maxTimeTraj*(0.7);
 
 if ~isempty(outlineFile)
-    plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,dataSpineUpdated,xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id(ids2check),'',imgInit,minTimeTraj,maxTimeTraj,booleanSave)
+    plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id(ids2check),'',imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
 else
-    plotTrajectoryLarvae([],[],xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id(ids2check),'',imgInit,minTimeTraj,maxTimeTraj,booleanSave)
+    plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id(ids2check),'',imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
 end
 
 

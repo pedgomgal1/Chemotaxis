@@ -33,7 +33,7 @@ function [tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,cellOutlinesLar
     end
     
     %% DO YOU WANT TO REMOVE TRAJECTORIES (ARTIFACTS)???
-    plotTrajectoryLarvae([],[],xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id,'',imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
+    plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,tableSummaryFeaturesFiltered.id,'',imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
     removeIDSelection = 'Yes';
     while strcmp(removeIDSelection,'Yes')
         removeIDSelection = questdlg('Do you want to remove any ID?', '','Yes','No, all right','Yes');

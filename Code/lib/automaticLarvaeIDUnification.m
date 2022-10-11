@@ -1,4 +1,4 @@
-function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification(tableSummaryLarvaeFeatures,rangeTime, xyCoordRange)
+function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification(tableSummaryLarvaeFeatures,rangeTime, xyCoordRange, averageSpeed)
 
 
     listIDConcat = zeros(size(tableSummaryLarvaeFeatures,1),2);
@@ -13,12 +13,22 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         idCandidatesTime = tableSummaryLarvaeFeatures.id((tableSummaryLarvaeFeatures.minTime -lastT) < rangeTime & (tableSummaryLarvaeFeatures.minTime -lastT) > 0);
         xyCoordCandidates= [tableSummaryLarvaeFeatures.xCoordInit(ismember(tableSummaryLarvaeFeatures.id,idCandidatesTime)),tableSummaryLarvaeFeatures.yCoordInit(ismember(tableSummaryLarvaeFeatures.id,idCandidatesTime))];
         
-        distanceTimeCandidates = pdist2(xyCoord1,xyCoordCandidates)<xyCoordRange;
+        distanceCandidates = pdist2(xyCoord1,xyCoordCandidates);
+        timeDifCandidates = tableSummaryLarvaeFeatures.minTime(ismember(tableSummaryLarvaeFeatures.id,idCandidatesTime)) - lastT;
 
-        if sum(distanceTimeCandidates)==1
-            listIDConcat(nID,2)=idCandidatesTime(distanceTimeCandidates);
+        
+
+        %discard the larvae with larger trajectories than possible using
+        %time difference of apparition and average speed of larvae.
+        distanceTimeCandidates = distanceCandidates < xyCoordRange;
+        maximumCoveredDistance = timeDifCandidates*averageSpeed;
+        distanceCandidatesFilter = distanceTimeCandidates & (maximumCoveredDistance'-distanceCandidates)>0;
+
+
+        if sum(distanceCandidatesFilter)==1
+            listIDConcat(nID,2)=idCandidatesTime(distanceCandidatesFilter);
         end
-        if sum(distanceTimeCandidates)>1
+        if sum(distanceCandidatesFilter)>1
             [~,idMin]=min(pdist2(xyCoord1,xyCoordCandidates));
             listIDConcat(nID,2)=idCandidatesTime(idMin);
         end
@@ -35,9 +45,6 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
 
         [normDistArea,minDifAreas] = min(pdist2(tableSummaryLarvaeFeatures.area(assignedID)/tableSummaryLarvaeFeatures.area(assignedID),tableSummaryLarvaeFeatures.area(conflictIDs)/tableSummaryLarvaeFeatures.area(assignedID)));
         [normDistMorp,minDifMorp] = min(pdist2(tableSummaryLarvaeFeatures.morpWidth(assignedID)/tableSummaryLarvaeFeatures.morpWidth(assignedID),tableSummaryLarvaeFeatures.morpWidth(conflictIDs)/tableSummaryLarvaeFeatures.morpWidth(assignedID)));
-
-%%% ******** INCLUDE DIRECTION CONDITION IN CASE DIFFERENCE BETWEEN AREAS / MORPHO IS NOT
-%%% EVIDENTE *********
 
         if minDifMorp==minDifAreas
             finalID = conflictLabels(minDifAreas);
