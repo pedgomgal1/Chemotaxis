@@ -19,12 +19,12 @@ featureName = cellfun(@(x) x{2},splittedNames,'UniformOutput',false);
 %load larvae properties
 idArea = cellfun(@(x) strcmp(x,'area'),featureName);
 idCast = cellfun(@(x) strcmp(x,'cast'),featureName);
-% idSpeed = cellfun(@(x) strcmp(x,'speed'),featureName);
+idSpeed = cellfun(@(x) strcmp(x,'speed'),featureName);
 idX = cellfun(@(x) strcmp(x,'x'),featureName);
 idY = cellfun(@(x) strcmp(x,'y'),featureName);
 
 areaFile = load(fullfile(filesChoreography(idArea).folder,filesChoreography(idArea).name));
-% speedFile = load(fullfile(filesChoreography(idSpeed).folder,filesChoreography(idSpeed).name));
+speedFile = load(fullfile(filesChoreography(idSpeed).folder,filesChoreography(idSpeed).name));
 xFile = load(fullfile(filesChoreography(idX).folder,filesChoreography(idX).name));
 yFile = load(fullfile(filesChoreography(idY).folder,filesChoreography(idY).name));
 
@@ -73,12 +73,13 @@ idsBoder2remove = tableSummaryFeatures.id(borderIds);
 tableSummaryFeatures(borderIds,:) = [];
 xFile(ismember(xFile(:,2),idsBoder2remove),:)=[];
 yFile(ismember(yFile(:,2),idsBoder2remove),:)=[];
-
+speedFile(ismember(speedFile(:,2),idsBoder2remove),:)=[];
 
 %%%% UNIFY LARVAE LABELS %%%%
 [tableSummaryFeatures,orderedLarvae] = reorganizeUniqueIDs(tableSummaryFeatures);
 [xFileUpdated]=updateLabelsFile(orderedLarvae,xFile);
 [yFileUpdated]=updateLabelsFile(orderedLarvae,yFile);
+[speedFileUpdated]=updateLabelsFile(orderedLarvae,speedFile);
 
 if ~isempty(outlineFile)
     [dataSpineUpdated]=updateLabelsFile(orderedLarvae,dataSpine);
@@ -93,8 +94,6 @@ end
 %%%% LOAD INIT RAW IMAGE %%%%
 imgName = dir(fullfile(dirPath,'*.png'));
 imgInit = imread(fullfile(imgName.folder, imgName.name));
-
-
 
 
 %%%% SAVE LARVAE TRAJECTORY (IMAGE SEQUENCE)
@@ -120,6 +119,7 @@ idsBoder2remove = tableSummaryFeaturesFiltered.id(borderIds);
 tableSummaryFeaturesFiltered(borderIds,:) = [];
 xFileUpdated(ismember(xFileUpdated(:,2),idsBoder2remove),:)=[];
 yFileUpdated(ismember(yFileUpdated(:,2),idsBoder2remove),:)=[];
+speedFileUpdated(ismember(speedFileUpdated(:,2),idsBoder2remove),:)=[];
 
 if ~isempty(outlineFile)
     dataSpineUpdated(ismember(dataSpineUpdated(:,2),idsBoder2remove),:)=[];
@@ -147,10 +147,10 @@ end
 
 if ~isempty(outlineFile)
     [tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,cellOutlinesLarvaeUpdated,dataSpineUpdated]=correctManuallyTrajectories(tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,cellOutlinesLarvaeUpdated,dataSpineUpdated,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave);
-    save(fullfile(dirPath,'choreographyData_Postprocessed.mat'),'xFileUpdated','yFileUpdated','castFileUpdated','tableSummaryFeaturesFiltered','dataSpineUpdated','cellOutlinesLarvaeUpdated')
+    save(fullfile(dirPath,'choreographyData_Postprocessed.mat'),'xFileUpdated','yFileUpdated','speedFileUpdated','castFileUpdated','tableSummaryFeaturesFiltered','dataSpineUpdated','cellOutlinesLarvaeUpdated')
 else
     [tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,~,~]=correctManuallyTrajectories(tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,[],[],imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave);
-    save(fullfile(dirPath,'choreographyData_Postprocessed.mat'),'xFileUpdated','yFileUpdated','tableSummaryFeaturesFiltered')
+    save(fullfile(dirPath,'choreographyData_Postprocessed.mat'),'xFileUpdated','yFileUpdated','speedFileUpdated','tableSummaryFeaturesFiltered')
 end
 
 

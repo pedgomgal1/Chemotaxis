@@ -46,12 +46,19 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         [normDistArea,minDifAreas] = min(pdist2(tableSummaryLarvaeFeatures.area(assignedID)/tableSummaryLarvaeFeatures.area(assignedID),tableSummaryLarvaeFeatures.area(conflictIDs)/tableSummaryLarvaeFeatures.area(assignedID)));
         [normDistMorp,minDifMorp] = min(pdist2(tableSummaryLarvaeFeatures.morpWidth(assignedID)/tableSummaryLarvaeFeatures.morpWidth(assignedID),tableSummaryLarvaeFeatures.morpWidth(conflictIDs)/tableSummaryLarvaeFeatures.morpWidth(assignedID)));
 
-        if minDifMorp==minDifAreas
+        [minDistAngle,minDifAngle]=min(abs((deg2rad(tableSummaryLarvaeFeatures.directionLarvaLast(assignedID))-deg2rad(tableSummaryLarvaeFeatures.directionLarvaInit(conflictIDs)))/2*pi));
+
+        if (minDifMorp==minDifAreas) && (minDifAreas==minDifAngle)
             finalID = conflictLabels(minDifAreas);
         else
-            proposedLabels = conflictLabels([minDifAreas,minDifMorp]);
-            [~,minFeature]=min([normDistArea,normDistMorp]);
-            finalID = proposedLabels(minFeature);
+            proposedLabels = conflictLabels([minDifAreas,minDifMorp,minDifAngle]);
+            [modeId,nRep,difReps]=mode([minDifAreas,minDifMorp,minDifAngle]);
+            if nRep>1
+                finalID = proposedLabels(modeId);
+            else
+                [~,minFeature]=min([normDistArea,normDistMorp,minDistAngle]);
+                finalID = proposedLabels(minFeature);
+            end
         end
         
         labels2Del = conflictLabels(conflictLabels~=finalID);
