@@ -28,9 +28,33 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         if sum(distanceCandidatesFilter)==1
             listIDConcat(nID,2)=idCandidatesTime(distanceCandidatesFilter);
         end
+
+        %if there are more than 1 candidate, then compare distances and
+        %angles
         if sum(distanceCandidatesFilter)>1
-            [~,idMin]=min(pdist2(xyCoord1,xyCoordCandidates));
-            listIDConcat(nID,2)=idCandidatesTime(idMin);
+            distBetwLarvae=pdist2(xyCoord1,xyCoordCandidates(distanceCandidatesFilter,:));
+            [~,idMinDist]=min(distBetwLarvae);
+
+            idFilteredCandidates = idCandidatesTime(distanceCandidatesFilter);
+            difAngles = abs(rad2deg(arrayfun(@(x) angdiff(deg2rad(tableSummaryLarvaeFeatures.directionLarvaLast(nID)),x),deg2rad(tableSummaryLarvaeFeatures.directionLarvaInit(ismember(tableSummaryLarvaeFeatures.id,idFilteredCandidates))))));
+            [~,idMinAngle]=min(difAngles);
+
+            if idMinDist~=idMinAngle 
+                disp(['ID_' num2str(tableSummaryLarvaeFeatures.id(nID)) ' at t' num2str(lastT) ' could be merge either with ' num2str(idFilteredCandidates(idMinAngle)) ' by angle or ' num2str(idFilteredCandidates(idMinDist)) ' by distance'])
+
+                minCombinedIndexes=[idMinDist,idMinAngle];
+                distCand = distBetwLarvae(minCombinedIndexes);
+                angCandNorm = difAngles(minCombinedIndexes)/180;
+                %combine (multiply) distance and normalized angles to select the closest index
+                %by similarity
+                [~,selectedId]=min(distCand(:).*angCandNorm(:));
+
+                listIDConcat(nID,2)=idFilteredCandidates(minCombinedIndexes(selectedId));
+            else
+                listIDConcat(nID,2)=idFilteredCandidates(idMinAngle);
+            end
+            
+            
         end
     end
 
@@ -43,16 +67,17 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         conflictIDs = ismember(listIDConcat(:,1),conflictLabels);
         assignedID = ismember(listIDConcat(:,1),repeatedIDs(nIDrep));
 
-        [normDistArea,minDifAreas] = min(pdist2(tableSummaryLarvaeFeatures.area(assignedID)/tableSummaryLarvaeFeatures.area(assignedID),tableSummaryLarvaeFeatures.area(conflictIDs)/tableSummaryLarvaeFeatures.area(assignedID)));
-        [normDistMorp,minDifMorp] = min(pdist2(tableSummaryLarvaeFeatures.morpWidth(assignedID)/tableSummaryLarvaeFeatures.morpWidth(assignedID),tableSummaryLarvaeFeatures.morpWidth(conflictIDs)/tableSummaryLarvaeFeatures.morpWidth(assignedID)));
+        [normDistArea,minIdAreas] = min(pdist2(tableSummaryLarvaeFeatures.area(assignedID)/tableSummaryLarvaeFeatures.area(assignedID),tableSummaryLarvaeFeatures.area(conflictIDs)/tableSummaryLarvaeFeatures.area(assignedID)));
+        [normDistMorp,minIdMorp] = min(pdist2(tableSummaryLarvaeFeatures.morpWidth(assignedID)/tableSummaryLarvaeFeatures.morpWidth(assignedID),tableSummaryLarvaeFeatures.morpWidth(conflictIDs)/tableSummaryLarvaeFeatures.morpWidth(assignedID)));
 
-        [minDistAngle,minDifAngle]=min(abs((deg2rad(tableSummaryLarvaeFeatures.directionLarvaLast(assignedID))-deg2rad(tableSummaryLarvaeFeatures.directionLarvaInit(conflictIDs)))/2*pi));
+        difAngles = abs(rad2deg(arrayfun(@(x) angdiff(deg2rad(tableSummaryLarvaeFeatures.directionLarvaLast(nID)),x),deg2rad(tableSummaryLarvaeFeatures.directionLarvaInit(conflictIDs)))));
+        [minDistAngle,idMinAngle]=min(difAngles/180);
 
-        if (minDifMorp==minDifAreas) && (minDifAreas==minDifAngle)
-            finalID = conflictLabels(minDifAreas);
+        if (minIdMorp==minIdAreas) && (minIdAreas==idMinAngle)
+            finalID = conflictLabels(minIdAreas);
         else
-            proposedLabels = conflictLabels([minDifAreas,minDifMorp,minDifAngle]);
-            [modeId,nRep,difReps]=mode([minDifAreas,minDifMorp,minDifAngle]);
+            proposedLabels = conflictLabels([minIdAreas,minIdMorp,idMinAngle]);
+            [modeId,nRep,difReps]=mode([minIdAreas,minIdMorp,idMinAngle]);
             if nRep>1
                 finalID = proposedLabels(modeId);
             else

@@ -75,8 +75,8 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
 
         if booleanSave==1
 
-            exportgraphics(gca,fullfile(folder2save,[num2str(sec) '.png']),'Resolution',300)
-    %         imwrite(getframe(gcf).cdata,fullfile(folder2save,[num2str(sec) '.png']))
+%             exportgraphics(gca,fullfile(folder2save,[num2str(sec) '.png']),'Resolution',300)
+            imwrite(getframe(gcf).cdata,fullfile(folder2save,[num2str(sec) '.png']))
             hold off 
             if sec== round(maxTime)
                 savefig(fullfile(folder2save,'finalTrajectories.fig'))
