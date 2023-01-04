@@ -31,7 +31,6 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
                selectedRowsOutlineLabelTimeSec = selectedRowsOutlineLabelTime(roundOutlineSeconds==sec,:);
                [~,idMinOutline]=min(pdist2(sec,selectedRowsOutlineLabelTimeSec(:,2)));
                
-               figure(h1)
                plot(selectedOutlineRowsSec{idMinOutline,4}*10,selectedOutlineRowsSec{idMinOutline,3}*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',1)
 
                if larvaAppearedOutline(nLarva)==1 || larvaAppearedOutline(nLarva)==max(roundOutlineSeconds)
@@ -69,8 +68,6 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
                 end
             end
 
-            
-
         end
 
         if booleanSave==1
@@ -83,7 +80,6 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
             end
             close all
         end
-        
     end
     
     

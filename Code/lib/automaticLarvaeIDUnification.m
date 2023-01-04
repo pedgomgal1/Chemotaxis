@@ -70,25 +70,16 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         [normDistArea,minIdAreas] = min(pdist2(tableSummaryLarvaeFeatures.area(assignedID)/tableSummaryLarvaeFeatures.area(assignedID),tableSummaryLarvaeFeatures.area(conflictIDs)/tableSummaryLarvaeFeatures.area(assignedID)));
         [normDistMorp,minIdMorp] = min(pdist2(tableSummaryLarvaeFeatures.morpWidth(assignedID)/tableSummaryLarvaeFeatures.morpWidth(assignedID),tableSummaryLarvaeFeatures.morpWidth(conflictIDs)/tableSummaryLarvaeFeatures.morpWidth(assignedID)));
 
-        difAngles = abs(rad2deg(arrayfun(@(x) angdiff(deg2rad(tableSummaryLarvaeFeatures.directionLarvaLast(nID)),x),deg2rad(tableSummaryLarvaeFeatures.directionLarvaInit(conflictIDs)))));
-        [minDistAngle,idMinAngle]=min(difAngles/180);
 
-        if (minIdMorp==minIdAreas) && (minIdAreas==idMinAngle)
+        if (minIdMorp==minIdAreas)
             finalID = conflictLabels(minIdAreas);
         else
-            proposedLabels = conflictLabels([minIdAreas,minIdMorp,idMinAngle]);
-            [modeId,nRep,difReps]=mode([minIdAreas,minIdMorp,idMinAngle]);
-            if nRep>1
-                finalID = proposedLabels(modeId);
-            else
-                [~,minFeature]=min([normDistArea,normDistMorp,minDistAngle]);
-                finalID = proposedLabels(minFeature);
-            end
+            proposedLabels = conflictLabels([minIdAreas,minIdMorp]);
+            [~,minFeature]=min([normDistArea,normDistMorp]);
+            finalID = proposedLabels(minFeature);
         end
-        
         labels2Del = conflictLabels(conflictLabels~=finalID);
         listIDConcat(ismember(listIDConcat(:,1),labels2Del),2)=0;
-
     end
 
     %% Unify same label
@@ -107,7 +98,6 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
             end
             cellUniqLabels{nCount}=allLabels;
             nCount=nCount+1;
-           
         else
             if listIDConcatCopy(nLab,1)>0
                 cellUniqLabels{nCount}= listIDConcatCopy(nLab,1);
@@ -117,11 +107,9 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
         nLab=nLab+1;
     end
 
-
     %% Get summary table to return   
     newTableSummaryFeatures=updateTableProperties(tableSummaryLarvaeFeatures,cellUniqLabels);
 
-    
-
+   
 
 end
