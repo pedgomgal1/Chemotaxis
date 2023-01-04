@@ -71,7 +71,7 @@ borderIds = tableSummaryFeaturesRaw.yCoordInit < 35 | tableSummaryFeaturesRaw.yC
 
 %%%% UNIFY LARVAE LABELS %%%%
 [tableSummaryFeatures,unifiedLabels] = reorganizeUniqueIDs(tableSummaryFeaturesRaw);
-save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels','tableSummaryFeaturesRaw')
+save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels','tableSummaryFeaturesRaw','tableSummaryFeatures')
 
 %%%% UPDATE LARVAE IDs INTO FILES
 [xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlinesLarvaeUpdated,castFileUpdated]=updateIDsOfFiles(unifiedLabels,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
@@ -88,7 +88,7 @@ folder2saveRaw = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarv
 if ~exist(fullfile(folder2save,'file')) 
     minTimeTraj = 0; %seconds
     maxTimeTraj = 600; %seconds
-    maxLengthLarvaeTrajectory = 100; %seconds
+    maxLengthLarvaeTrajectory = 60; %seconds
     booleanSave = 1; %save==1, not save == 0 
    
     mkdir(folder2save)

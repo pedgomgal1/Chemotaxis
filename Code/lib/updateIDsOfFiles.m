@@ -4,13 +4,9 @@ function [xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlin
     [yFileUpdated]=updateLabelsFile(unifiedLabels,yFile);
     [speedFileUpdated]=updateLabelsFile(unifiedLabels,speedFile);
     
-    if ~isempty(outlineFile)
+    if ~isempty(cellOutlinesLarvae)
         [dataSpineUpdated]=updateLabelsFile(unifiedLabels,dataSpine);
         [cellOutlinesLarvaeUpdated]=updateOutlinesFile(unifiedLabels,cellOutlinesLarvae);
-        castFile(ismember(castFile(:,2),idsBoder2remove),:)=[];
-    
-        dataSpineUpdated(ismember(dataSpineUpdated(:,2),idsBoder2remove),:)=[];
-        cellOutlinesLarvaeUpdated(ismember(vertcat(cellOutlinesLarvaeUpdated{:,1}),idsBoder2remove),:)=[];
         castFileUpdated =updateLabelsFile(unifiedLabels,castFile);
     end
 

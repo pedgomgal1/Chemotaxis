@@ -15,7 +15,6 @@ function [tableSummaryFeatures,unifiedLabels]=reorganizeUniqueIDs(tableSummaryFe
         else
             stopIterations=stopIterations+1;
         end
-        nLab1 = nLab2;
     end
     rangeTime = 100; %seconds
     xyCoordRange = 20; %pixel distance
@@ -25,9 +24,21 @@ function [tableSummaryFeatures,unifiedLabels]=reorganizeUniqueIDs(tableSummaryFe
     finalIDs=[tableSummaryFeatures.id];
     unifiedLabels = cell(size(finalIDs));
     allCombinedIDs=[orderedLarvae{:}];
+
     for nIDs = 1:length(finalIDs)
         unifiedLabels{nIDs}=unique([allCombinedIDs{cellfun(@(x) ismember(finalIDs(nIDs),x), allCombinedIDs)}]);
     end
 
+    %join locally tied IDs
+    nonTiedIDs=  setdiff([unique([allCombinedIDs{:}])],[unique([unifiedLabels{:}])]);
+    while ~isempty(nonTiedIDs)
+        copyUnifiedLabels = unifiedLabels;
+        for nUnifLab = 1:length(unifiedLabels)
+            copyUnifiedLabels{nUnifLab}=unique([allCombinedIDs{cellfun(@(x) any(ismember(x,unifiedLabels{nUnifLab})),allCombinedIDs)}]);
+        end
+        unifiedLabels = copyUnifiedLabels;
+        nonTiedIDs=  setdiff([unique([allCombinedIDs{:}])],[unique([unifiedLabels{:}])]);
+    end
+    
 
 end
