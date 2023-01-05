@@ -20,4 +20,9 @@ function newTableSummaryFeatures=updateTableProperties(tableSummaryLarvaeFeature
         
     end
 
+    %remove discarded IDs (if any)
+    allIDs=[cellUniqLabels{:}];
+    tabIDs=newTableSummaryFeatures.id;
+    rows2remove=~ismember(tabIDs,allIDs);
+    newTableSummaryFeatures(rows2remove,:)=[];
 end
