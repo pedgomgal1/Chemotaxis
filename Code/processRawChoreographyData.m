@@ -85,7 +85,7 @@ imgInit=ones(1728,2350);
 folder2save = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvae');
 folder2saveRaw = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvaeRaw');
 
-if ~exist(fullfile(folder2save,'file')) 
+if ~exist(folder2save,'file') 
     minTimeTraj = 0; %seconds
     maxTimeTraj = 600; %seconds
     maxLengthLarvaeTrajectory = 60; %seconds
