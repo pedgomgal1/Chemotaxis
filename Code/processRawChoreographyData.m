@@ -1,10 +1,16 @@
-close all
-clear all
+function processRawChoreographyData(varargin)
 
-addpath(genpath('lib'))
-
-%Select folder to analyse the data from Choreography
-dirPath = uigetdir('../Choreography_results','select folder after Choreography processing');
+if isempty(varargin)
+    close all
+    clear all
+    
+    addpath(genpath('lib'))
+    
+    %Select folder to analyse the data from Choreography
+    dirPath = uigetdir('../Choreography_results','select folder after Choreography processing');
+else
+    dirPath=varargin{1};
+end
 
 filesChoreography = dir(fullfile(dirPath,'*.dat'));
 outlineFile = dir(fullfile(dirPath,'*.outline'));
@@ -70,8 +76,15 @@ borderIds = tableSummaryFeaturesRaw.yCoordInit < 35 | tableSummaryFeaturesRaw.yC
 [tableSummaryFeaturesRaw,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile]=removeBorderIds(borderIds,tableSummaryFeaturesRaw,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
 
 %%%% UNIFY LARVAE LABELS %%%%
-[tableSummaryFeatures,unifiedLabels] = reorganizeUniqueIDs(tableSummaryFeaturesRaw);
-save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels','tableSummaryFeaturesRaw','tableSummaryFeatures')
+file2save=fullfile(dirPath,'proofreadOrderedLarvae.mat');
+if ~exist(file2save,'file')
+    [tableSummaryFeatures,unifiedLabels] = reorganizeUniqueIDs(tableSummaryFeaturesRaw);
+    save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels')
+else
+    load(file2save,'curatedLabels')
+    unifiedLabels=curatedLabels;
+    tableSummaryFeatures=updateTableProperties(tableSummaryFeaturesRaw,curatedLabels);
+end
 
 %%%% UPDATE LARVAE IDs INTO FILES
 [xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlinesLarvaeUpdated,castFileUpdated]=updateIDsOfFiles(unifiedLabels,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
@@ -82,10 +95,10 @@ save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels','tableSummar
 imgInit=ones(1728,2350);
 
 %%%% SAVE LARVAE TRAJECTORY (IMAGE SEQUENCE)
-folder2save = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvae');
+folder2save = fullfile(filesChoreography(1).folder,'imageSequenceLarvae');
 folder2saveRaw = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvaeRaw');
 
-if ~exist(folder2save,'file') 
+if ~exist(folder2save,'dir') 
     minTimeTraj = 0; %seconds
     maxTimeTraj = 600; %seconds
     maxLengthLarvaeTrajectory = 60; %seconds
