@@ -32,10 +32,11 @@
 pwd; hostname; date
 echo "CPUs per task: $SLURM_CPUS_PER_TASK"
 ### Load required modules/libraries if needed
-module load matlab/r2020b
+export PATH=/public/matlab/jbriggs/bin:$PATH 
+# module load matlab/r2020b
 ### This was recommended by MATLAb through technical support
-ulimit -u 63536 
+# ulimit -u 63536 
 cd $PWD
-matlab -nodisplay -nosplash -softwareopengl < /PATH/trackAndplotTrajectories_parallel.m > /PATH/out_message.txt
+matlab -nodisplay -nosplash -softwareopengl < /lmb/home/pgg/ParkinsonConnectomics/NavigationOdorGradientLarvae/Code/automaticTrackingParallel.m > /lmb/home/pgg/ParkinsonConnectomics/NavigationOdorGradientLarvae/Code/out_message.txt
 date
 ~
