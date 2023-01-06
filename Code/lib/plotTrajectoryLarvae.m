@@ -1,4 +1,4 @@
-function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,maxLengthLarvaeTrajectory,booleanSave)
+function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgInit,minTime,maxTime,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
 
     allLarvae=unique(larvaeIDs);
     cmap = colorcube(length(allLarvae));
@@ -10,7 +10,7 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
         larvaAppearedOutline = zeros(length(allLarvae),1);
     end
 
-    for sec = round(minTime):round(maxTime)
+    for sec = round(minTime):stepTimeTrack:round(maxTime)
         h1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','off');
 
         imshow(imgInit)

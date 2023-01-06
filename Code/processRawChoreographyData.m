@@ -96,22 +96,25 @@ imgInit=ones(1728,2350);
 
 %%%% SAVE LARVAE TRAJECTORY (IMAGE SEQUENCE)
 folder2save = fullfile(filesChoreography(1).folder,'imageSequenceLarvae');
-folder2saveRaw = fullfile(filesChoreography(1).folder,'temporalImageSequenceLarvaeRaw');
+folder2saveRaw = fullfile(filesChoreography(1).folder,'imageSequenceLarvaeRaw');
 
 if ~exist(folder2save,'dir') 
     minTimeTraj = 0; %seconds
     maxTimeTraj = 600; %seconds
     maxLengthLarvaeTrajectory = 60; %seconds
+    stepTimeTrack=1;
     booleanSave = 1; %save==1, not save == 0 
    
     mkdir(folder2save)
     mkdir(folder2saveRaw)
     if ~isempty(outlineFile)
-        plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)        
-        plotTrajectoryLarvae(cellOutlinesLarvae,xFile,yFile,unique(xFile(:,2)),folder2saveRaw,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
+        plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
+        stepTimeTrack=5;
+        plotTrajectoryLarvae(cellOutlinesLarvae,xFile,yFile,unique(xFile(:,2)),folder2saveRaw,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
     else
-        plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
-        plotTrajectoryLarvae([],xFile,yFile,unique(xFile(:,2)),folder2saveRaw,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,booleanSave)
+        plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,unique(xFile(:,2)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
+        stepTimeTrack=5;
+        plotTrajectoryLarvae([],xFile,yFile,unique(xFile(:,2)),folder2saveRaw,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
     end
 end
 
