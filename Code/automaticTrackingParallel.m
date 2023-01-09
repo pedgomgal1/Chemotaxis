@@ -9,8 +9,12 @@ path2search2=fullfile('..','Choreography_results','**','n_1ul1000EA_600s@n','202
 
 totalDirectories=[dir(path2search1);dir(path2search2)];
 
-parpool(64);
+parpool(8);
 parfor nFile = 1:size(totalDirectories,1)
+    
+    disp(['starting - ' num2str(nFile) ' - ' totalDirectories(nFile).name])
     targetDir = fullfile(totalDirectories(nFile).folder,totalDirectories(nFile).name);
     processRawChoreographyData(targetDir)
+    disp(['DONE - ' num2str(nFile) ' - ' totalDirectories(nFile).name])
+
 end
