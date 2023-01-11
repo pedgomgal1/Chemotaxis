@@ -39,8 +39,8 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
                    text(mean(selectedOutlineRowsSec{idMinOutline,4}(:))*10,mean(selectedOutlineRowsSec{idMinOutline,3}(:))*10,['   ' num2str(allLarvae(nLarva))],'FontSize',3)
                end
                
-               xCoordsLarva = xFile(xFile(:,2)==allLarvae(nLarva),3:4);
-               yCoordsLarva = yFile(yFile(:,2)==allLarvae(nLarva),3:4);
+               xCoordsLarva = xFile(xFile(:,1)==allLarvae(nLarva),2:3);
+               yCoordsLarva = yFile(yFile(:,1)==allLarvae(nLarva),2:3);
 
                xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec & (xCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
                yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec & (yCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
@@ -49,8 +49,8 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
             else
                 if any(round(selectedRowsOutlineLabelTime(:,2))<sec) 
             
-                   xCoordsLarva = xFile(xFile(:,2)==allLarvae(nLarva),3:4);
-                   yCoordsLarva = yFile(yFile(:,2)==allLarvae(nLarva),3:4);
+                   xCoordsLarva = xFile(xFile(:,1)==allLarvae(nLarva),2:3);
+                   yCoordsLarva = yFile(yFile(:,1)==allLarvae(nLarva),2:3);
 
                    xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec & (xCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
                    yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec & (yCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
