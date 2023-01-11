@@ -40,7 +40,7 @@ function [newTableSummaryFeatures,cellUniqLabels] = automaticLarvaeIDUnification
             [~,idMinAngle]=min(difAngles);
 
             if idMinDist~=idMinAngle 
-                disp(['ID_' num2str(tableSummaryLarvaeFeatures.id(nID)) ' at t' num2str(lastT) ' could be merge either with ' num2str(idFilteredCandidates(idMinAngle)) ' by angle or ' num2str(idFilteredCandidates(idMinDist)) ' by distance'])
+                %disp(['ID_' num2str(tableSummaryLarvaeFeatures.id(nID)) ' at t' num2str(lastT) ' could be merge either with ' num2str(idFilteredCandidates(idMinAngle)) ' by angle or ' num2str(idFilteredCandidates(idMinDist)) ' by distance'])
 
                 minCombinedIndexes=[idMinDist,idMinAngle];
                 distCand = distBetwLarvae(minCombinedIndexes);
