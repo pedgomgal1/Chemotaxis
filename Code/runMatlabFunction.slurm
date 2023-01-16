@@ -9,15 +9,15 @@
 #SBATCH --output=%x-%j.out
 #SBATCH --error=%x-%j.err
 ### REQUIRED. Specify the PI group for this job
-#SBATCH --account=cardonaGroup
+# SBATCH --account=pgg
 ### Optional. Request email when job begins and ends
 ### Specify high priority jobs
-#SBATCH --qos=user_qos_manager
+# SBATCH --qos=user_qos_manager
 # SBATCH --mail-type=ALL
 ### Optional. Specify email address to use for notification
 #SBATCH --mail-user=pgg@mrc-lmb.cam.ac.uk
 ### REQUIRED. Set the partition for your job.
-#SBATCH --partition=cpu
+#SBATCH --partition=standard
 ### REQUIRED. Set the number of cores that will be used for this job.
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
