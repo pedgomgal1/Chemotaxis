@@ -62,6 +62,7 @@ larvaeAngleRoundT = larvaeAngle;
 larvaeAngleRoundT(:,2) = round(larvaeAngleRoundT(:,2));
 
 propLarvInAnglGroup=zeros(length(uniqRoundTime),4);
+allLarvaeOrientationPerSec = [];
 for nSec=1:length(uniqRoundTime)
     idT=ismember(larvaeAngleRoundT(:,2),uniqRoundTime(nSec));
     uniqLabelsSec = unique(larvaeAngleRoundT(idT,1));
@@ -78,6 +79,10 @@ for nSec=1:length(uniqRoundTime)
         [~,idGroup]=max([group1,group2,group3,group4]);
         auxLarvInGroups(nLar,idGroup)=1;
     end
+
+    larvaeOrientationPerSec = [uniqLabelsSec,ones(size(uniqLabelsSec)).*uniqRoundTime(nSec),auxLarvInGroups];
+
+    allLarvaeOrientationPerSec=[allLarvaeOrientationPerSec;larvaeOrientationPerSec];
     propLarvInAnglGroup(nSec,:)=sum(auxLarvInGroups,1)/sum(auxLarvInGroups(:));
 end
 
@@ -89,19 +94,32 @@ plot(uniqRoundTime,propLarvInAnglGroup(:,3),'-p', 'LineWidth', 2);
 plot(uniqRoundTime,propLarvInAnglGroup(:,4),'-k', 'LineWidth', 2);
 legend({'left','right','top','bottom'})
 
-%% Probability of larvae going left to turn right and viceversa
+
+[~,idOrd]=sort(allLarvaeOrientationPerSec(:,1));
+orderedAllLarvOrientPerSec=allLarvaeOrientationPerSec(idOrd,:);
+
+%% Probability of larvae heading one direction and change the trajectory to another possible direction
 
 
-%% Probability of larvae going top or bottom, to turn right or left
+nOrientStages = 4; % left - rigth - top - bottom
+matrixProb = zeros(nOrientStages,nOrientStages);
+uniqLabels = unique(orderedAllLarvOrientPerSec(:,1));
+for nLar = 1:length(uniqLabels)
+    idsLab = ismember(orderedAllLarvOrientPerSec(:,1),uniqLabels(nLar));
+    larvOrientPerSec = orderedAllLarvOrientPerSec(idsLab,3:end);
+    auxCellMatrix=mat2cell(larvOrientPerSec,ones(size(larvOrientPerSec,1),1) ,4);
+    auxChangPosition =cellfun(@(x,y) [find(x),find(y)],auxCellMatrix(1:end-1,:),auxCellMatrix(2:end,:),'UniformOutput',false);
+    for nT=1:size(auxChangPosition,1)
+        subIndAux = [auxChangPosition{nT}];
+        matrixProb(subIndAux(1),subIndAux(2))=matrixProb(subIndAux(1),subIndAux(2))+1;    
+    end
 
+end
 
-%% Calculate reorientation rate when running between 45dg and -45dg (315dg); 45dg & 135dg; 135dg & 225dg; 225dg &315dg
+%TRANSITION MATRIX - MARKOV CHAIN
+matrixProb2 = matrixProb./sum(matrixProb);
 
-
-
-    %%%%%%%%%%%% CALCULATE FEATURES OF INDIVIDUAL EXPERIMENT %%%%%%%%%%%%
-
-    %% Speed (per second and in average)
+%% Speed (per second and in average)
 % 
 %     %Only measure the time intervals when the larva is not stacked. 
 %     speedFileRoundT = speedFile;
