@@ -1,4 +1,4 @@
-function binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, endTime,xAxisLimits)
+function binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, endTime,xAxisLimits,yFile)
     idInitT=ismember(round(yFile(:,2)),initTime);
     idEndT=ismember(round(yFile(:,2)),endTime);
     labelsInitT = unique(yFile(idInitT,1));
