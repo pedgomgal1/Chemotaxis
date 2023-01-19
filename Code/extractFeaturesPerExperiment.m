@@ -2,7 +2,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     avgSpeedRoundT, stdSpeedRoundT, semSpeedRoundT,avgMeanSpeed,avgStdSpeed,avgSemSpeed,...
     avgSpeed085RoundT, stdSpeed085RoundT, semSpeed085RoundT,avgMeanSpeed085,avgStdSpeed085,avgSemSpeed085,...
     avgSpeedPerOrientation,stdSpeedPerOrientation,avgSpeed085PerOrientation,stdSpeed085PerOrientation,...
-    meanAngularSpeedPerT,stdAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,angularSpeed,...
+    meanAngularSpeedPerT,stdAngularSpeedPerT,avgMeanAngularSpeed,avgStdAngularSpeed,angularSpeed,...
     avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation] = extractFeaturesPerExperiment(varargin)
 
     if isempty(varargin)
@@ -14,6 +14,9 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     else
         dirPath=varargin{1};
     end
+
+if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
+
     %select the folder to load
     [xFile, yFile, areaFile, speedFile, speedFile085, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
     
@@ -47,7 +50,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     endTime=590;
     xAxisLimits=[18,216];
     
-    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, endTime,xAxisLimits);
+    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, endTime,xAxisLimits,yFile);
     
     %% Speed (per second and in average)
     
@@ -66,6 +69,17 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     [avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation]=calculateAvgSpeedPerOrientation(angularSpeed,orderedAllLarvOrientPerSec);
     
 
+    save(fullfile(dirPath,'navigationResults.mat'),'navigationIndex_Xaxis','navigationIndex_Yaxis','propLarvInAnglGroup',...,
+                'matrixProbOrientation','transitionMatrixOrientation','binsXdistributionInitEnd','avgSpeedRoundT', 'stdSpeedRoundT', 'semSpeedRoundT','avgMeanSpeed','avgStdSpeed','avgSemSpeed',...
+                'avgSpeed085RoundT', 'stdSpeed085RoundT', 'semSpeed085RoundT','avgMeanSpeed085','avgStdSpeed085','avgSemSpeed085','avgSpeedPerOrientation','stdSpeedPerOrientation',...,
+                'avgSpeed085PerOrientation','stdSpeed085PerOrientation','meanAngularSpeedPerT','stdAngularSpeedPerT','avgStdAngularSpeed','avgMeanAngularSpeed','angularSpeed',...
+                'avgAngularSpeedPerOrientation','stdAngularSpeedPerOrientation')
+
+else
+    load(fullfile(dirPath,'navigationResults.mat'));
+end
+
+%%%%%% POSSIBLE IDEAS TO IMPLEMENT IN FUTURE %%%%%%
 
 %   %%% I don't trust in the accuracy of castFile because the larvae are pretty small and this parameter is high sensity.  
 %   %% measure number of casting in average
