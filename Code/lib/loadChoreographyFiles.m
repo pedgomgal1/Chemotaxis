@@ -1,4 +1,4 @@
-function [xFile, yFile, areaFile, speedFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath)
+function [xFile, yFile, areaFile, speedFile, speedFile085, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath)
     
     filesChoreography = dir(fullfile(dirPath,'*.dat'));
     outlineFile = dir(fullfile(dirPath,'*.outline'));
@@ -14,6 +14,8 @@ function [xFile, yFile, areaFile, speedFile, castFile, morpwidFile, dataSpine, c
     idArea = cellfun(@(x) strcmp(x,'area'),featureName);
     idCast = cellfun(@(x) strcmp(x,'cast'),featureName);
     idSpeed = cellfun(@(x) strcmp(x,'speed'),featureName);
+    idSpeed085 = cellfun(@(x) strcmp(x,'speed085'),featureName);
+
     idX = cellfun(@(x) strcmp(x,'x'),featureName);
     idY = cellfun(@(x) strcmp(x,'y'),featureName);
     
@@ -21,6 +23,9 @@ function [xFile, yFile, areaFile, speedFile, castFile, morpwidFile, dataSpine, c
     areaFile=table2array(areaFile(:,2:5));
     speedFile = readtable(fullfile(filesChoreography(idSpeed).folder,filesChoreography(idSpeed).name));
     speedFile=table2array(speedFile(:,2:5));
+    speedFile085 = readtable(fullfile(filesChoreography(idSpeed085).folder,filesChoreography(idSpeed085).name));
+    speedFile085=table2array(speedFile085(:,2:5));
+
     xFile = readtable(fullfile(filesChoreography(idX).folder,filesChoreography(idX).name));
     xFile=table2array(xFile(:,2:5));
     yFile = readtable(fullfile(filesChoreography(idY).folder,filesChoreography(idY).name));
