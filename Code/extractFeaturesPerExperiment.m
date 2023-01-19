@@ -1,4 +1,9 @@
-function [navigationIndex,propLarvInAnglGroup] = extractFeaturesPerExperiment(varargin)
+function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrixProbOrientation,transitionMatrixOrientation,binsXdistributionInitEnd,...
+    avgSpeedRoundT, stdSpeedRoundT, semSpeedRoundT,avgMeanSpeed,avgStdSpeed,avgSemSpeed,...
+    avgSpeed085RoundT, stdSpeed085RoundT, semSpeed085RoundT,avgMeanSpeed085,avgStdSpeed085,avgSemSpeed085,...
+    avgSpeedPerOrientation,stdSpeedPerOrientation,avgSpeed085PerOrientation,stdSpeed085PerOrientation,...
+    meanAngularSpeedPerT,stdAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,angularSpeed,...
+    avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation] = extractFeaturesPerExperiment(varargin)
 
     if isempty(varargin)
         close all
@@ -10,186 +15,61 @@ function [navigationIndex,propLarvInAnglGroup] = extractFeaturesPerExperiment(va
         dirPath=varargin{1};
     end
     %select the folder to load
-    [xFile, yFile, areaFile, speedFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
+    [xFile, yFile, areaFile, speedFile, speedFile085, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
     
     %discard those bodies detected for less than 20 seconds and remove the
     %ones appearing in the borders.
 
-    %%%%%%%%%%%% CODE TO DO %%%%%%%%%%%%
-
-    % navigation index (movement along X axis)
+    %% Navigation index (movement along X axis from yFile and along Y axis from xFile)
     
-    %(yFile corresponds with xAxis being larger values left [patches], lower right)
-    uniqueId = unique(yFile(:,1));
-    difY=zeros(length(uniqueId),1);
-    absY=zeros(length(uniqueId),1);
-    for nId = 1:length(uniqueId)
-        yFileId = yFile(ismember(yFile(:,1),uniqueId(nId)),:);
-        difYMov=arrayfun(@(x,y) x-y, yFileId(1:end-1,3),yFileId(2:end,3));
-        difY(nId)= sum(difYMov);
-        absY(nId)= sum(abs(difYMov));
-    end
-
-    totalY = sum(absY);
-
-    navigationIndex=sum(difY)/totalY;
-
     %(xFile corresponds with yAxis being larger values top, lower bottom)
+    %(yFile corresponds with xAxis being larger values left [patches], lower right)
 
-    difX=zeros(size(uniqueId));
-    absX=zeros(length(uniqueId),1);
+    navigationIndex_Xaxis=calculateNavigationIndex(yFile);
+    navigationIndex_Yaxis=calculateNavigationIndex(xFile);
 
-    for nId = 1:length(uniqueId)
-        xFileId = xFile(ismember(xFile(:,1),uniqueId(nId)),:);
-        difXMov=arrayfun(@(x,y) x-y, xFileId(1:end-1,3),xFileId(2:end,3));
-        difX(nId)= sum(difXMov);
-        absX(nId)= sum(abs(difXMov));
-    end
 
-    %navigation index Y axis
-%     navIndex = sum(difY)/sum(difX)
-
-%% Calculate probability of orientation between 225dg and 315dg (heading odor); 45dg & 135dg (opposite to odor); 135dg & 225dg (heading top); 315dg % 45dg (heading bottom)
-%orient.dat will provide the angle of the body, in degrees. Head and tail
-%are not, in general, determined, so this value is only correct modulo pi.
-%We will have to determinate where the head is pointing considering the two
-%previous timepoints.
-
-larvaeAngle = calculateAngleMovLarvae(xFile, yFile);
-
-uniqRoundTime = unique(round(larvaeAngle(:,2)));
-larvaeAngleRoundT = larvaeAngle;
-larvaeAngleRoundT(:,2) = round(larvaeAngleRoundT(:,2));
-
-propLarvInAnglGroup=zeros(length(uniqRoundTime),4);
-allLarvaeOrientationPerSec = [];
-for nSec=1:length(uniqRoundTime)
-    idT=ismember(larvaeAngleRoundT(:,2),uniqRoundTime(nSec));
-    uniqLabelsSec = unique(larvaeAngleRoundT(idT,1));
+    %% Calculate probability of orientation between 225dg and 315dg (heading odor); 45dg & 135dg (opposite to odor); 135dg & 225dg (heading top); 315dg % 45dg (heading bottom)
+    %orient.dat will provide the angle of the body, in degrees. Head and tail
+    %are not, in general, determined, so this value is only correct modulo pi.
+    %We will have to determinate where the head is pointing considering the two
+    %previous timepoints.
     
-    %classify the angles in 4 groups as explained in the header (<- ; -> ; ^ ; v )
-    auxLarvInGroups=zeros(length(uniqLabelsSec),4);
+    % left - rigth - top - bottom orientationGroups
+    [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngle] = calculateLarvaeOrientations(xFile,yFile);
 
-    for nLar = 1:length(uniqLabelsSec)
-        idLar = ismember(larvaeAngleRoundT(:,1),uniqLabelsSec(nLar));
-        group1 = sum(larvaeAngleRoundT(idLar & idT,3)>=225 & larvaeAngleRoundT(idLar & idT,3) < 315);
-        group2 = sum(larvaeAngleRoundT(idLar & idT,3)>=45 & larvaeAngleRoundT(idLar & idT,3) < 135);
-        group3 = sum(larvaeAngleRoundT(idLar & idT,3)>=135 & larvaeAngleRoundT(idLar & idT,3) < 225);
-        group4 = sum(larvaeAngleRoundT(idLar & idT,3)>=315 | larvaeAngleRoundT(idLar & idT,3) < 45);
-        [~,idGroup]=max([group1,group2,group3,group4]);
-        auxLarvInGroups(nLar,idGroup)=1;
-    end
+    %% Probability of larvae heading one direction and change the trajectory to another possible direction
+    [matrixProbOrientation,transitionMatrixOrientation]=calculateProbabilityOfOrientation(orderedAllLarvOrientPerSec);
+    
+    
+    %% Calculate histogram of space occupied at the beginning and at the end (only X axis, from 180 to 2160) - Check timePoint=10s and 600s
+    initTime=10;
+    endTime=590;
+    xAxisLimits=[18,216];
+    
+    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, endTime,xAxisLimits);
+    
+    %% Speed (per second and in average)
+    
+    [avgSpeedRoundT, stdSpeedRoundT, semSpeedRoundT,avgMeanSpeed,avgStdSpeed,avgSemSpeed] = calculateAverageSpeed(speedFile);
+    [avgSpeed085RoundT, stdSpeed085RoundT, semSpeed085RoundT,avgMeanSpeed085,avgStdSpeed085,avgSemSpeed085] = calculateAverageSpeed(speedFile085);
 
-    larvaeOrientationPerSec = [uniqLabelsSec,ones(size(uniqLabelsSec)).*uniqRoundTime(nSec),auxLarvInGroups];
+    
+    %% Average speed when larvae are pointing the odor patches (oriented btw 45-315 degrees) and avoiding them (oriented btw 135-225 degrees).
 
-    allLarvaeOrientationPerSec=[allLarvaeOrientationPerSec;larvaeOrientationPerSec];
-    propLarvInAnglGroup(nSec,:)=sum(auxLarvInGroups,1)/sum(auxLarvInGroups(:));
-end
+    [avgSpeedPerOrientation,stdSpeedPerOrientation]=calculateAvgSpeedPerOrientation(speedFile,orderedAllLarvOrientPerSec);
+    [avgSpeed085PerOrientation,stdSpeed085PerOrientation]=calculateAvgSpeedPerOrientation(speedFile085,orderedAllLarvOrientPerSec);
 
-figure;hold on
-
-plot(uniqRoundTime,propLarvInAnglGroup(:,1),'-r', 'LineWidth', 2);
-plot(uniqRoundTime,propLarvInAnglGroup(:,2),'-b', 'LineWidth', 2);
-plot(uniqRoundTime,propLarvInAnglGroup(:,3),'-p', 'LineWidth', 2);
-plot(uniqRoundTime,propLarvInAnglGroup(:,4),'-k', 'LineWidth', 2);
-legend({'left','right','top','bottom'})
-
-
-[~,idOrd]=sort(allLarvaeOrientationPerSec(:,1));
-orderedAllLarvOrientPerSec=allLarvaeOrientationPerSec(idOrd,:);
-
-%% Probability of larvae heading one direction and change the trajectory to another possible direction
+    %% Average angular speed
+    %angular change between 2 consecutive time points.
+    [meanAngularSpeedPerT,stdAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,angularSpeed]  = calculateAngularSpeed (larvaeAngle);
+    [avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation]=calculateAvgSpeedPerOrientation(angularSpeed,orderedAllLarvOrientPerSec);
+    
 
 
-nOrientStages = 4; % left - rigth - top - bottom
-matrixProb = zeros(nOrientStages,nOrientStages);
-uniqLabels = unique(orderedAllLarvOrientPerSec(:,1));
-for nLar = 1:length(uniqLabels)
-    idsLab = ismember(orderedAllLarvOrientPerSec(:,1),uniqLabels(nLar));
-    larvOrientPerSec = orderedAllLarvOrientPerSec(idsLab,3:end);
-    auxCellMatrix=mat2cell(larvOrientPerSec,ones(size(larvOrientPerSec,1),1) ,4);
-    auxChangPosition =cellfun(@(x,y) [find(x),find(y)],auxCellMatrix(1:end-1,:),auxCellMatrix(2:end,:),'UniformOutput',false);
-    for nT=1:size(auxChangPosition,1)
-        subIndAux = [auxChangPosition{nT}];
-        matrixProb(subIndAux(1),subIndAux(2))=matrixProb(subIndAux(1),subIndAux(2))+1;    
-    end
-
-end
-
-%TRANSITION MATRIX - MARKOV CHAIN
-matrixProb2 = matrixProb./sum(matrixProb);
-
-%% Speed (per second and in average)
-% 
-%     %Only measure the time intervals when the larva is not stacked. 
-%     speedFileRoundT = speedFile;
-%     speedFileRoundT(:,2) = round(speedFile(:,2));
-%     uniqRoundTime = unique(round(speedFile(:,2)));
-% 
-% %     uniqLabels = unique(speedFileRoundT(:,1));
-% %     figure;
-% %     hold on
-% %     for nLab=1:length(uniqLabels)
-% %         idsLab = ismember(speedFileRoundT(:,1),uniqLabels(nLab));
-% %         auxSpeedFileRoundT= speedFileRoundT(idsLab,:);
-% %         auxUniqRoundTime = unique(round(auxSpeedFileRoundT(:,2)));
-% %         auxAvgSpeedRoundT=arrayfun(@(x) mean(auxSpeedFileRoundT(ismember(auxSpeedFileRoundT(:,2),x),3)),auxUniqRoundTime);
-% %         plot(auxUniqRoundTime,auxAvgSpeedRoundT, 'LineWidth', 2);
-% %     end
-%     
-%     
-%     % uniqTime = unique(speedFile(:,2));
-%     % avgSpeed=arrayfun(@(x) mean(speedFile(ismember(speedFile(:,2),x),3)),uniqTime);
-%     % plot(uniqTime,avgSpeed)
-%     
-%     
-%     avgSpeedRoundT=arrayfun(@(x) mean(speedFileRoundT(ismember(speedFileRoundT(:,2),x),3)),uniqRoundTime);
-%     %semSpeedRoundT=arrayfun(@(x) std(speedFileRoundT(ismember(speedFileRoundT(:,2),x),3))/sqrt(sum(ismember(speedFileRoundT(:,2),x))),uniqRoundTime);
-%     stdSpeedRoundT=arrayfun(@(x) std(speedFileRoundT(ismember(speedFileRoundT(:,2),x),3)),uniqRoundTime);
-% 
-%     curve1 = avgSpeedRoundT + stdSpeedRoundT;
-%     curve2 = avgSpeedRoundT - stdSpeedRoundT;
-%     x2 = [uniqRoundTime', fliplr(uniqRoundTime')];
-%     inBetween = [curve1', fliplr(curve2')];
-%     fill(x2, inBetween, 'r','FaceAlpha',0.3);
-%     hold on;
-%     plot(uniqRoundTime,avgSpeedRoundT,'r', 'LineWidth', 2);
-% 
-%     avgMeanSpeedWholeExp = mean(avgSpeedRoundT);
-%     avgStdSpeedWholeExp = mean(stdSpeedRoundT);
-% 
-%     %Average speed when larvae are pointing the odor patches (oriented btw 45-315 degrees) and avoiding them (oriented btw 135-225 degrees).
-% 
-% 
-% 
-%     %capture indexes of larvae when are oriented between 315dg and 45dg
-%     %(heading the odor patches)
-% 
-%     %capture indexes of larvae when are oriented between 135dg and 225dg
-%     %(avoiding the odor patches)
-% 
-%     %Average speed when larvae are pointing the opposite side of odor
-%     %patches.
-% 
-%     %% average angular speed
-%     %%USE ANGULAR.DAT TO CALCULATE
-% 
-%     %% measure number of casting in average
-%     [averageNumberOfCastings]=calculateAverageNumberOfCastings(castFile,xFile,yFile);
-%     
-%     %% calculate how many times the larva change the trajectory left-right and right-left
-%     
-%     %WE CANNOT USE DIR TO THIS% I'LL MEASURE DIRECTION MOVEMENT
-%     %I'LL MEASURE THE TOTAL CHANGES OF DIRECTION (
-%     % calculateAverageChangeOfDirection()
-%     
-%     %% Proportion of displacement left - right
-%     
-%     %% Proportion of larvae heading the odor side (use automatic ID tracked larvae [summary table] to don't have repetitions).
-%     
-%     %plot trajectories
-%     
-
+%   %%% I don't trust in the accuracy of castFile because the larvae are pretty small and this parameter is high sensity.  
+%   %% measure number of casting in average
+%      [averageNumberOfCastingsTotal, averageNumberOfCastsWhen]=calculateAverageNumberOfCastings(castFile,xFile,yFile);        
 
 
 %     %% GLOBAL PHENOTYPE MEASUREMENT %%
