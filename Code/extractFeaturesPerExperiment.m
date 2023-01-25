@@ -2,7 +2,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     avgSpeedRoundT, stdSpeedRoundT, semSpeedRoundT,avgMeanSpeed,avgStdSpeed,avgSemSpeed,...
     avgSpeed085RoundT, stdSpeed085RoundT, semSpeed085RoundT,avgMeanSpeed085,avgStdSpeed085,avgSemSpeed085,...
     avgSpeedPerOrientation,stdSpeedPerOrientation,avgSpeed085PerOrientation,stdSpeed085PerOrientation,...
-    meanAngularSpeedPerT,stdAngularSpeedPerT,avgMeanAngularSpeed,avgStdAngularSpeed,angularSpeed,...
+    meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgMeanAngularSpeed,avgSemAngularSpeed,avgStdAngularSpeed,angularSpeed,...
     avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation] = extractFeaturesPerExperiment(varargin)
 
     if isempty(varargin)
@@ -19,6 +19,35 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
 
     %select the folder to load
     [xFile, yFile, areaFile, speedFile, speedFile085, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
+
+    %%% Filtering VALID larvae %%%
+    % consider only the larvae reamining at least 30 seconds and do not appearing in the borders of the plate (possible
+    %artifacts) %%%
+
+    thresholdTime = 30; % 30 seg
+    uniqueId=unique(xFile(:,1));
+
+    minTimesPerID = arrayfun(@(x) min(xFile(xFile(:,1)==x,2)), uniqueId);
+    initCoordXLarvae = arrayfun(@(x,y) xFile(xFile(:,2)==x & xFile(:,1)==y,3),minTimesPerID,uniqueId);
+    initCoordYLarvae = arrayfun(@(x,y) yFile(yFile(:,2)==x & yFile(:,1)==y,3),minTimesPerID,uniqueId);
+    maxTimesPerID = arrayfun(@(x) max(xFile(xFile(:,1)==x,2)), uniqueId);
+    lastCoordXLarvae = arrayfun(@(x,y) mean(xFile(xFile(:,2)==x & xFile(:,1)==y,3)),maxTimesPerID,uniqueId);
+    lastCoordYLarvae = arrayfun(@(x,y) mean(yFile(yFile(:,2)==x & yFile(:,1)==y,3)),maxTimesPerID,uniqueId);
+    medianAreaLarvae = arrayfun(@(x) median(areaFile(areaFile(:,1)==x,3)), uniqueId);
+    morpwidLarvae = arrayfun(@(x) median(morpwidFile(morpwidFile(:,1)==x,3)), uniqueId);
+    
+    [angleInitVector,angleLastVector]=calculateInitAndLastDirectionPerID(xFile,yFile,minTimesPerID,maxTimesPerID,uniqueId);
+    
+    tableSummaryFeaturesRaw = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth'});
+    
+    
+    %%%% REMOVE X BORDERS LARVAE %%%%% (most likely artifacts)
+    borderXIds = tableSummaryFeaturesRaw.yCoordInit < 35 | tableSummaryFeaturesRaw.yCoordInit > 190;
+    borderYIds = tableSummaryFeaturesRaw.xCoordInit < 10 | tableSummaryFeaturesRaw.xCoordInit > 160;
+    idsFewTime= (tableSummaryFeaturesRaw.maxTime - tableSummaryFeaturesRaw.minTime) < thresholdTime;
+
+    [tableSummaryFeatures,xFile,yFile,speedFile,speedFile085,areaFile,dataSpine,cellOutlinesLarvae,castFile]=removeBorderIds((borderXIds | borderYIds | idsFewTime),tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,areaFile,dataSpine,cellOutlinesLarvae,castFile);
+
     
     %discard those bodies detected for less than 20 seconds and remove the
     %ones appearing in the borders.
@@ -26,8 +55,7 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
     %% Navigation index (movement along X axis from yFile and along Y axis from xFile)
     
     %(xFile corresponds with yAxis being larger values top, lower bottom)
-    %(yFile corresponds with xAxis being larger values left [patches], lower right)
-
+    %(yFile corresponds with xAxis being larger values right, loewer left [patches]
     navigationIndex_Xaxis=calculateNavigationIndex(yFile);
     navigationIndex_Yaxis=calculateNavigationIndex(xFile);
 
@@ -47,10 +75,11 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
     
     %% Calculate histogram of space occupied at the beginning and at the end (only X axis, from 180 to 2160) - Check timePoint=10s and 600s
     initTime=10;
+    intermediateTime =300;
     endTime=590;
     xAxisLimits=[18,216];
     
-    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, endTime,xAxisLimits,yFile);
+    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, intermediateTime, endTime,xAxisLimits,yFile);
     
     %% Speed (per second and in average)
     
@@ -65,54 +94,32 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
 
     %% Average angular speed
     %angular change between 2 consecutive time points.
-    [meanAngularSpeedPerT,stdAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,angularSpeed]  = calculateAngularSpeed (larvaeAngle);
+    [meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,avgSemAngularSpeed,angularSpeed]  = calculateAngularSpeed (larvaeAngle);
     [avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation]=calculateAvgSpeedPerOrientation(angularSpeed,orderedAllLarvOrientPerSec);
     
+
+    %% Consider larvae that remains at least 60 seconds
+
 
     save(fullfile(dirPath,'navigationResults.mat'),'navigationIndex_Xaxis','navigationIndex_Yaxis','propLarvInAnglGroup',...,
                 'matrixProbOrientation','transitionMatrixOrientation','binsXdistributionInitEnd','avgSpeedRoundT', 'stdSpeedRoundT', 'semSpeedRoundT','avgMeanSpeed','avgStdSpeed','avgSemSpeed',...
                 'avgSpeed085RoundT', 'stdSpeed085RoundT', 'semSpeed085RoundT','avgMeanSpeed085','avgStdSpeed085','avgSemSpeed085','avgSpeedPerOrientation','stdSpeedPerOrientation',...,
-                'avgSpeed085PerOrientation','stdSpeed085PerOrientation','meanAngularSpeedPerT','stdAngularSpeedPerT','avgStdAngularSpeed','avgMeanAngularSpeed','angularSpeed',...
+                'avgSpeed085PerOrientation','stdSpeed085PerOrientation','meanAngularSpeedPerT','stdAngularSpeedPerT','semAngularSpeedPerT','avgStdAngularSpeed','avgMeanAngularSpeed','avgSemAngularSpeed','angularSpeed',...
                 'avgAngularSpeedPerOrientation','stdAngularSpeedPerOrientation')
 
 else
-    load(fullfile(dirPath,'navigationResults.mat'));
+     load(fullfile(dirPath,'navigationResults.mat'));
 end
 
 %%%%%% POSSIBLE IDEAS TO IMPLEMENT IN FUTURE %%%%%%
 
-%   %%% I don't trust in the accuracy of castFile because the larvae are pretty small and this parameter is high sensity.  
+  %%% I don't trust in the accuracy of castFile because the larvae are pretty small and this parameter is high sensity.  
 %   %% measure number of casting in average
 %      [averageNumberOfCastingsTotal, averageNumberOfCastsWhen]=calculateAverageNumberOfCastings(castFile,xFile,yFile);        
 
 
-%     %% GLOBAL PHENOTYPE MEASUREMENT %%
-%     
-      %%%% consider only the larvae reamining at least 100 seconds %%%%
-
-%     minTimesPerID = arrayfun(@(x) min(xFile(xFile(:,1)==x,2)), uniqueId);
-%     initCoordXLarvae = arrayfun(@(x,y) xFile(xFile(:,2)==x & xFile(:,1)==y,3),minTimesPerID,uniqueId);
-%     initCoordYLarvae = arrayfun(@(x,y) yFile(yFile(:,2)==x & yFile(:,1)==y,3),minTimesPerID,uniqueId);
-%     maxTimesPerID = arrayfun(@(x) max(xFile(xFile(:,1)==x,2)), uniqueId);
-%     lastCoordXLarvae = arrayfun(@(x,y) mean(xFile(xFile(:,2)==x & xFile(:,1)==y,3)),maxTimesPerID,uniqueId);
-%     lastCoordYLarvae = arrayfun(@(x,y) mean(yFile(yFile(:,2)==x & yFile(:,1)==y,3)),maxTimesPerID,uniqueId);
-%     medianAreaLarvae = arrayfun(@(x) median(areaFile(areaFile(:,1)==x,3)), uniqueId);
-%     morpwidLarvae = arrayfun(@(x) median(morpwidFile(morpwidFile(:,1)==x,3)), uniqueId);
-%     
-%     [angleInitVector,angleLastVector]=calculateInitAndLastDirectionPerID(xFile,yFile,minTimesPerID,maxTimesPerID,uniqueId);
-%     
-%     tableSummaryFeaturesRaw = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth'});
-     %%%%% REMOVE X BORDERS LARVAE %%%%% (most likely artifacts)
-%        borderIds = tableSummaryFeaturesRaw.yCoordInit < 35 | tableSummaryFeaturesRaw.yCoordInit > 190;
-%     [tableSummaryFeaturesRaw,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile]=removeBorderIds(borderIds,tableSummaryFeaturesRaw,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
-% %Correcting some trajectories. Removing isolated trajectories appearing at
-% %Y borders, and short trajectories.
-% borderIds = tableSummaryFeatures.xCoordInit < 10 | tableSummaryFeatures.xCoordInit > 160;
-%[tableSummaryFeaturesFiltered,xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlinesLarvaeUpdated,castFileUpdated]=removeBorderIds(borderIds,tableSummaryFeatures,xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlinesLarvaeUpdated,castFileUpdated);
-
-
-
-
+    %% GLOBAL PHENOTYPE MEASUREMENT %%
+    
 %     %Polar histogram with trajectories (USING AUTOMATIC ID TRACKED LARVAE)
 %     angleInitFinalPoint = atan2(tableSummaryFeaturesFiltered.xCoordEnd - tableSummaryFeaturesFiltered.xCoordInit, tableSummaryFeaturesFiltered.yCoordEnd - tableSummaryFeaturesFiltered.yCoordInit);
 %     distInitFinalPoint = pdist2([tableSummaryFeaturesFiltered.xCoordInit, tableSummaryFeaturesFiltered.yCoordInit],[tableSummaryFeaturesFiltered.xCoordEnd, tableSummaryFeaturesFiltered.yCoordEnd]);
