@@ -1,6 +1,5 @@
-function plotSpeedVersusT(avgSpeedRoundT,semSpeedRoundT,idsFreeNav,idsTH,idsG2019S,idsA53T,LineStyle,colours,paintError)
+function plotSpeedVersusT(T,avgSpeedRoundT,semSpeedRoundT,idsFreeNav,idsTH,idsG2019S,idsA53T,LineStyle,colours,paintError)
     
-    x=0:600;
     
     
     avgMeanSpeedT_control_Free = mean(cat(3,avgSpeedRoundT{intersect(idsFreeNav,idsTH)}),3);
@@ -16,7 +15,7 @@ function plotSpeedVersusT(avgSpeedRoundT,semSpeedRoundT,idsFreeNav,idsTH,idsG201
         
         curve1_control_Free = avgMeanSpeedT_control_Free + avgSemSpeedT_control_Free;
         curve2_control_Free = avgMeanSpeedT_control_Free - avgSemSpeedT_control_Free;
-        x2=[x,fliplr(x)];
+        x2=[T,fliplr(T)];
         inBetween = [curve1_control_Free', fliplr(curve2_control_Free')];
         fill(x2, inBetween, [colours(1,:)],'FaceAlpha',0.3,'EdgeColor','none');
         hold on;
@@ -32,13 +31,13 @@ function plotSpeedVersusT(avgSpeedRoundT,semSpeedRoundT,idsFreeNav,idsTH,idsG201
         fill(x2, inBetween, [colours(3,:)],'FaceAlpha',0.3,'EdgeColor','none');
     end
 
-    plot(x,avgMeanSpeedT_control_Free,'Color',[colours(1,:)], 'LineWidth', 1,'LineStyle',LineStyle);
+    plot(T,avgMeanSpeedT_control_Free,'Color',[colours(1,:)], 'LineWidth', 1,'LineStyle',LineStyle);
     hold on
     
-    plot(x,avgMeanSpeedT_G2019S_Free,'Color',[colours(2,:)], 'LineWidth', 1,'LineStyle',LineStyle);
+    plot(T,avgMeanSpeedT_G2019S_Free,'Color',[colours(2,:)], 'LineWidth', 1,'LineStyle',LineStyle);
     
     
-    plot(x,avgMeanSpeedT_A53T_Free,'Color',[colours(3,:)], 'LineWidth', 1,'LineStyle',LineStyle);
+    plot(T,avgMeanSpeedT_A53T_Free,'Color',[colours(3,:)], 'LineWidth', 1,'LineStyle',LineStyle);
     
   
 
