@@ -1,9 +1,14 @@
 function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrixProbOrientation,transitionMatrixOrientation,binsXdistributionInitEnd,...
     avgSpeedRoundT, stdSpeedRoundT, semSpeedRoundT,avgMeanSpeed,avgStdSpeed,avgSemSpeed,...
     avgSpeed085RoundT, stdSpeed085RoundT, semSpeed085RoundT,avgMeanSpeed085,avgStdSpeed085,avgSemSpeed085,...
-    avgSpeedPerOrientation,stdSpeedPerOrientation,avgSpeed085PerOrientation,stdSpeed085PerOrientation,...
+    avgCrabSpeedRoundT, stdCrabSpeedRoundT, semCrabSpeedRoundT,avgMeanCrabSpeed,avgStdCrabSpeed,avgSemCrabSpeed,...
+    avgAreaRoundT, stdAreaRoundT, semAreaRoundT,avgMeanArea,avgStdArea,avgSemArea,...
+    avgCurveRoundT, stdCurveRoundT, semCurveRoundT,avgMeanCurve,avgStdCurve,avgSemCurve,...
+    avgSpeedPerOrientation,stdSpeedPerOrientation,avgSpeed085PerOrientation,stdSpeed085PerOrientation, ...
+    avgCrabSpeedPerOrientation,stdCrabSpeedPerOrientation,avgCurvePerOrientation,stdCurvePerOrientation,...
     meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgMeanAngularSpeed,avgSemAngularSpeed,avgStdAngularSpeed,angularSpeed,...
     avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation] = extractFeaturesPerExperiment(varargin)
+
 
     if isempty(varargin)
         close all
@@ -18,7 +23,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
 if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
 
     %select the folder to load
-    [xFile, yFile, areaFile, speedFile, speedFile085, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
+    [xFile, yFile, areaFile, speedFile, speedFile085, crabSpeedFile,curveFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
 
     %%% Filtering VALID larvae %%%
     % consider only the larvae reamining at least 30 seconds and do not appearing in the borders of the plate (possible
@@ -46,11 +51,8 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
     borderYIds = tableSummaryFeaturesRaw.xCoordInit < 10 | tableSummaryFeaturesRaw.xCoordInit > 160;
     idsFewTime= (tableSummaryFeaturesRaw.maxTime - tableSummaryFeaturesRaw.minTime) < thresholdTime;
 
-    [tableSummaryFeatures,xFile,yFile,speedFile,speedFile085,areaFile,dataSpine,cellOutlinesLarvae,castFile]=removeBorderIds((borderXIds | borderYIds | idsFewTime),tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,areaFile,dataSpine,cellOutlinesLarvae,castFile);
-
-    
-    %discard those bodies detected for less than 20 seconds and remove the
-    %ones appearing in the borders.
+    [tableSummaryFeatures,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile]=removeBorderIds((borderXIds | borderYIds | idsFewTime),tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile);
+   
 
     %% Navigation index (movement along X axis from yFile and along Y axis from xFile)
     
@@ -75,37 +77,49 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
     
     %% Calculate histogram of space occupied at the beginning and at the end (only X axis, from 180 to 2160) - Check timePoint=10s and 600s
     initTime=10;
-    intermediateTime =300;
+    midTime =300;
     endTime=590;
     xAxisLimits=[18,216];
     
-    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, intermediateTime, endTime,xAxisLimits,yFile);
+    binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, midTime, endTime,xAxisLimits,yFile);
+    
     
     %% Speed (per second and in average)
-    
     [avgSpeedRoundT, stdSpeedRoundT, semSpeedRoundT,avgMeanSpeed,avgStdSpeed,avgSemSpeed] = calculateAverageSpeed(speedFile);
     [avgSpeed085RoundT, stdSpeed085RoundT, semSpeed085RoundT,avgMeanSpeed085,avgStdSpeed085,avgSemSpeed085] = calculateAverageSpeed(speedFile085);
+    [avgCrabSpeedRoundT, stdCrabSpeedRoundT, semCrabSpeedRoundT,avgMeanCrabSpeed,avgStdCrabSpeed,avgSemCrabSpeed] = calculateAverageSpeed(crabSpeedFile);
 
     
     %% Average speed when larvae are pointing the odor patches (oriented btw 45-315 degrees) and avoiding them (oriented btw 135-225 degrees).
 
     [avgSpeedPerOrientation,stdSpeedPerOrientation]=calculateAvgSpeedPerOrientation(speedFile,orderedAllLarvOrientPerSec);
     [avgSpeed085PerOrientation,stdSpeed085PerOrientation]=calculateAvgSpeedPerOrientation(speedFile085,orderedAllLarvOrientPerSec);
+    [avgCrabSpeedPerOrientation,stdCrabSpeedPerOrientation]=calculateAvgSpeedPerOrientation(crabSpeedFile,orderedAllLarvOrientPerSec);
 
     %% Average angular speed
     %angular change between 2 consecutive time points.
     [meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,avgSemAngularSpeed,angularSpeed]  = calculateAngularSpeed (larvaeAngle);
     [avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation]=calculateAvgSpeedPerOrientation(angularSpeed,orderedAllLarvOrientPerSec);
     
+    %% Area (per second and in average)
+    [avgAreaRoundT, stdAreaRoundT, semAreaRoundT,avgMeanArea,avgStdArea,avgSemArea] = calculateAverageSpeed(areaFile);
+
+    %% Curve (per second and in average)
+    [avgCurveRoundT, stdCurveRoundT, semCurveRoundT,avgMeanCurve,avgStdCurve,avgSemCurve] = calculateAverageSpeed(curveFile);
+    [avgCurvePerOrientation,stdCurvePerOrientation]=calculateAvgSpeedPerOrientation(curveFile,orderedAllLarvOrientPerSec);
+
 
     %% Consider larvae that remains at least 60 seconds
-
-
     save(fullfile(dirPath,'navigationResults.mat'),'navigationIndex_Xaxis','navigationIndex_Yaxis','propLarvInAnglGroup',...,
                 'matrixProbOrientation','transitionMatrixOrientation','binsXdistributionInitEnd','avgSpeedRoundT', 'stdSpeedRoundT', 'semSpeedRoundT','avgMeanSpeed','avgStdSpeed','avgSemSpeed',...
-                'avgSpeed085RoundT', 'stdSpeed085RoundT', 'semSpeed085RoundT','avgMeanSpeed085','avgStdSpeed085','avgSemSpeed085','avgSpeedPerOrientation','stdSpeedPerOrientation',...,
-                'avgSpeed085PerOrientation','stdSpeed085PerOrientation','meanAngularSpeedPerT','stdAngularSpeedPerT','semAngularSpeedPerT','avgStdAngularSpeed','avgMeanAngularSpeed','avgSemAngularSpeed','angularSpeed',...
-                'avgAngularSpeedPerOrientation','stdAngularSpeedPerOrientation')
+                'avgSpeed085RoundT', 'stdSpeed085RoundT', 'semSpeed085RoundT','avgMeanSpeed085','avgStdSpeed085','avgSemSpeed085', ...
+                'avgCrabSpeedRoundT', 'stdCrabSpeedRoundT', 'semCrabSpeedRoundT','avgMeanCrabSpeed','avgStdCrabSpeed','avgSemCrabSpeed',...
+                'avgAreaRoundT', 'stdAreaRoundT', 'semAreaRoundT','avgMeanArea','avgStdArea','avgSemArea',...
+                'avgCurveRoundT', 'stdCurveRoundT', 'semCurveRoundT','avgMeanCurve','avgStdCurve','avgSemCurve',...
+                'avgSpeedPerOrientation','stdSpeedPerOrientation','avgSpeed085PerOrientation','stdSpeed085PerOrientation',...
+                'avgCrabSpeedPerOrientation','stdCrabSpeedPerOrientation','avgCurvePerOrientation','stdCurvePerOrientation',...
+                'meanAngularSpeedPerT','stdAngularSpeedPerT','semAngularSpeedPerT','avgStdAngularSpeed','avgMeanAngularSpeed',...
+                'avgSemAngularSpeed','angularSpeed','avgAngularSpeedPerOrientation','stdAngularSpeedPerOrientation')
 
 else
      load(fullfile(dirPath,'navigationResults.mat'));
