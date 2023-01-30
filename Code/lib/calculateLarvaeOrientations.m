@@ -1,4 +1,4 @@
-function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngle] = calculateLarvaeOrientations(xFile,yFile)
+function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngleXY,anglesTail2Head_RoundT,curveTail2Mid2Head_RoundT,posTailLarvae_RoundT] = calculateLarvaeOrientations(xFile,yFile,spineFile)
 
     xFileRoundT = xFile;
     yFileRoundT = yFile;
@@ -25,32 +25,72 @@ function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngle] = calculat
         avgYFilePerRoundTFile = [avgYFilePerRoundTFile;avgYPerRoundTFileAux];
     end
 
-    larvaeAngle = calculateAngleMovLarvae(avgXFilePerRoundTFile, avgYFilePerRoundTFile);
-   
-    uniqRoundTime = unique(round(larvaeAngle(:,2)));
+    larvaeAngleXY = calculateAngleMovLarvae(avgXFilePerRoundTFile, avgYFilePerRoundTFile);
+
+    %% Code to calcultate larvae orientation from Spine
+    [totalAnglesTail2HeadLarvae,curveLarvaeHeadMidTail,tailLarvae] = calculateHeadTailCenterAngles(larvaeAngleXY,spineFile);
+
+    anglesTail2Head_RoundT = [];
+    curveTail2Mid2Head_RoundT =[];
+    posTailLarvae_RoundT = [];
+    %%choose the angle closer to the round second
+    uniqLabelsSpine = unique(totalAnglesTail2HeadLarvae(:,1));
+    for nLabSp=1:length(uniqLabelsSpine)
+        idL = ismember(totalAnglesTail2HeadLarvae(:,1),uniqLabelsSpine(nLabSp));
+        uniqueRoundTAux = unique(round(totalAnglesTail2HeadLarvae(idL,2)));
+        anglesAuxLarv = totalAnglesTail2HeadLarvae(idL,:);
+        curvAuxLarv = curveLarvaeHeadMidTail(idL,:);
+        tailPosAux = tailLarvae(idL,:);
+
+
+        tempAnglesLarva = zeros(size(uniqueRoundTAux,1),3);
+        tempCurveLarva = zeros(size(uniqueRoundTAux,1),3);
+        tempTailPosLarva = zeros(size(uniqueRoundTAux,1),4);
+
+        for nAuxT=1:length(uniqueRoundTAux)
+            [~,idMin]=min(pdist2(anglesAuxLarv(:,2),uniqueRoundTAux(nAuxT)));
+            tempAnglesLarva(nAuxT,:) = [anglesAuxLarv(idMin,1),uniqueRoundTAux(nAuxT),anglesAuxLarv(idMin,3)];
+
+            [~,idMin]=min(pdist2(curvAuxLarv(:,2),uniqueRoundTAux(nAuxT)));
+            tempCurveLarva(nAuxT,:) = [curvAuxLarv(idMin,1),uniqueRoundTAux(nAuxT),curvAuxLarv(idMin,3)];
+           
+            [~,idMin]=min(pdist2(tailPosAux(:,2),uniqueRoundTAux(nAuxT)));
+            tempTailPosLarva(nAuxT,:) = [tailPosAux(idMin,1),uniqueRoundTAux(nAuxT),tailPosAux(idMin,3:4)];
+        end
+        anglesTail2Head_RoundT=[anglesTail2Head_RoundT;tempAnglesLarva];
+        curveTail2Mid2Head_RoundT=[curveTail2Mid2Head_RoundT;tempCurveLarva];
+        posTailLarvae_RoundT=[posTailLarvae_RoundT;tempTailPosLarva];
+
+    end
+
+
+
+
+
+    uniqRoundTime = unique(round(anglesTail2Head_RoundT(:,2)));
     
     propLarvInAnglGroup=zeros(length(uniqRoundTime),4);
-    allLarvaeOrientationPerSec = [];
+    allLarvaeOrientationXYPerSec = [];
     for nSec=1:length(uniqRoundTime)
-        idT=ismember(larvaeAngle(:,2),uniqRoundTime(nSec));
-        uniqLabelsSec = unique(larvaeAngle(idT,1));
+        idT=ismember(round(anglesTail2Head_RoundT(:,2)),uniqRoundTime(nSec));
+        uniqLabelsSec = unique(anglesTail2Head_RoundT(idT,1));
         
         %classify the angles in 4 groups as explained in the header (<- ; -> ; ^ ; v )
         auxLarvInGroups=zeros(length(uniqLabelsSec),4);
     
         for nLar = 1:length(uniqLabelsSec)
-            idLar = ismember(larvaeAngle(:,1),uniqLabelsSec(nLar));
-            group1 = larvaeAngle(idLar & idT,3)>=225 & larvaeAngle(idLar & idT,3) < 315;
-            group2 = larvaeAngle(idLar & idT,3)>=45 & larvaeAngle(idLar & idT,3) < 135;
-            group3 = larvaeAngle(idLar & idT,3)>=135 & larvaeAngle(idLar & idT,3) < 225;
-            group4 = larvaeAngle(idLar & idT,3)>=315 | larvaeAngle(idLar & idT,3) < 45;
+            idLar = ismember(anglesTail2Head_RoundT(:,1),uniqLabelsSec(nLar));
+            group1 = anglesTail2Head_RoundT(idLar & idT,3)>=225 & anglesTail2Head_RoundT(idLar & idT,3) < 315;
+            group2 = anglesTail2Head_RoundT(idLar & idT,3)>=45 & anglesTail2Head_RoundT(idLar & idT,3) < 135;
+            group3 = anglesTail2Head_RoundT(idLar & idT,3)>=135 & anglesTail2Head_RoundT(idLar & idT,3) < 225;
+            group4 = anglesTail2Head_RoundT(idLar & idT,3)>=315 | anglesTail2Head_RoundT(idLar & idT,3) < 45;
             [~,idGroup]=max([group1,group2,group3,group4]);
             auxLarvInGroups(nLar,idGroup)=1;
         end
     
         larvaeOrientationPerSec = [uniqLabelsSec,ones(size(uniqLabelsSec)).*uniqRoundTime(nSec),auxLarvInGroups];
     
-        allLarvaeOrientationPerSec=[allLarvaeOrientationPerSec;larvaeOrientationPerSec];
+        allLarvaeOrientationXYPerSec=[allLarvaeOrientationXYPerSec;larvaeOrientationPerSec];
         propLarvInAnglGroup(nSec,:)=sum(auxLarvInGroups,1)/sum(auxLarvInGroups(:));
     end
     
@@ -63,8 +103,8 @@ function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngle] = calculat
 %     legend({'left','right','top','bottom'})
     
     
-    [~,idOrd]=sort(allLarvaeOrientationPerSec(:,1));
-    orderedAllLarvOrientPerSec=allLarvaeOrientationPerSec(idOrd,:);
+    [~,idOrd]=sort(allLarvaeOrientationXYPerSec(:,1));
+    orderedAllLarvOrientPerSec=allLarvaeOrientationXYPerSec(idOrd,:);
 
 
 end
