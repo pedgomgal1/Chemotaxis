@@ -72,8 +72,9 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     %% CALCULATE LARVAE ANGLE USING SPINE DATA. ANGLE BETWEEN HEAD AND TAIL POINTS
     [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngle,anglesTail2Head_RoundT,~,posTailLarvae_RoundT] = calculateLarvaeOrientations(xFile,yFile,dataSpine);
 
-    idToChange = ismember(larvaeAngle(:,2),anglesTail2Head_RoundT(:,2),'rows');
+    idToChange = ismember(larvaeAngle(:,1:2),anglesTail2Head_RoundT(:,1:2),'rows');
     larvaeAngle(idToChange,:)=anglesTail2Head_RoundT;
+    larvaeAngle=sortrows(larvaeAngle);
 
     %% Probability of larvae heading one direction and change the trajectory to another possible direction
     nOrientStages = 4; % left - rigth - top - bottom
@@ -82,7 +83,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     %% Calculate percentage of reorientation points/ turning rate (when > 45 degrees), and proportion of run-turning states 
     thresholdAngle = 30; %degrees
     thresholdDistance = 0.03; 
-    [orderedLarvaePerStatesRunStopTurn] = calculateTurningRate(larvaeAngle,posTailLarvae_RoundT,thresholdAngle,thresholdDistance);
+    [orderedLarvaePerStatesRunStopTurn] = calculateTurningRate(anglesTail2Head_RoundT,posTailLarvae_RoundT,thresholdAngle,thresholdDistance);
     nMovStages = 3; % run - stop - turn
     [matrixProbMotionStates,transitionMatrixMotionStates]=calculateProbabilityOfOrientation(orderedLarvaePerStatesRunStopTurn,nMovStages);
 
