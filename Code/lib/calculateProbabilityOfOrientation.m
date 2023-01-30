@@ -1,12 +1,11 @@
-function [matrixProbOrientation,transitionMatrixOrientation]=calculateProbabilityOfOrientation(orderedAllLarvOrientPerSec)
+function [matrixProbOrientation,transitionMatrixOrientation]=calculateProbabilityOfOrientation(orderedAllLarvOrientPerSec,nOrientStages)
 
-    nOrientStages = 4; % left - rigth - top - bottom
     matrixProbOrientation = zeros(nOrientStages,nOrientStages);
     uniqLabels = unique(orderedAllLarvOrientPerSec(:,1));
     for nLar = 1:length(uniqLabels)
         idsLab = ismember(orderedAllLarvOrientPerSec(:,1),uniqLabels(nLar));
         larvOrientPerSec = orderedAllLarvOrientPerSec(idsLab,3:end);
-        auxCellMatrix=mat2cell(larvOrientPerSec,ones(size(larvOrientPerSec,1),1) ,4);
+        auxCellMatrix=mat2cell(larvOrientPerSec,ones(size(larvOrientPerSec,1),1) ,nOrientStages);
         auxChangPosition =cellfun(@(x,y) [find(x),find(y)],auxCellMatrix(1:end-1,:),auxCellMatrix(2:end,:),'UniformOutput',false);
         for nT=1:size(auxChangPosition,1)
             subIndAux = [auxChangPosition{nT}];
