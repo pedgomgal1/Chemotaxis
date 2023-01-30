@@ -9,10 +9,17 @@ function [tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFi
     speedFile085(ismember(speedFile085(:,1),idsBoder2remove),:)=[];
     crabSpeedFile(ismember(crabSpeedFile(:,1),idsBoder2remove),:)=[];
     areaFile(ismember(areaFile(:,1),idsBoder2remove),:)=[];
+
+
+    uniqValidId = xFile(:,1);
+
     if ~isempty(cellOutlinesLarvae)
+        idSpine = ismember(dataSpine(:,1),uniqValidId);
+        
         castFile(ismember(castFile(:,1),idsBoder2remove),:)=[];
         curveFile(ismember(curveFile(:,1),idsBoder2remove),:)=[];
-        dataSpine(ismember(dataSpine(:,1),idsBoder2remove),:)=[];
+        dataSpine(~idSpine,:)=[];
+        
         cellOutlinesLarvae(ismember(vertcat(cellOutlinesLarvae{:,1}),idsBoder2remove),:)=[];
     end
 
