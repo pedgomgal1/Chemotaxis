@@ -1,6 +1,7 @@
 function navigationIndex_Xaxis=calculateNavigationIndex(yFile)
 
-    %(yFile corresponds with xAxis being lower values left [patches], higher right)
+    % (Dist Y(+) - Dist Y(-)) / (Dist Y(+) + Dist Y(-))
+
     uniqueId = unique(yFile(:,1));
     difY=zeros(length(uniqueId),1);
     absY=zeros(length(uniqueId),1);
