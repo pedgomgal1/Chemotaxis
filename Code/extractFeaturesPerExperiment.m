@@ -7,7 +7,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     avgSpeedPerOrientation,stdSpeedPerOrientation,avgSpeed085PerOrientation,stdSpeed085PerOrientation, ...
     avgCrabSpeedPerOrientation,stdCrabSpeedPerOrientation,avgCurvePerOrientation,stdCurvePerOrientation,...
     meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgMeanAngularSpeed,avgSemAngularSpeed,avgStdAngularSpeed,angularSpeed,...
-    avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation] = extractFeaturesPerExperiment(varargin)
+    avgAngularSpeedPerOrientation,stdAngularSpeedPerOrientation,runRatePerOrient,stopRatePerOrient,turningRatePerOrient,tableSummaryFeatures] = extractFeaturesPerExperiment(varargin)
 
 
     if isempty(varargin)
@@ -20,7 +20,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
         dirPath=varargin{1};
     end
 
-%if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
+if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
 
     %select the folder to load
     [xFile, yFile, areaFile, speedFile, speedFile085, crabSpeedFile,curveFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
@@ -40,10 +40,13 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     lastCoordYLarvae = arrayfun(@(x,y) mean(yFile(yFile(:,2)==x & yFile(:,1)==y,3)),maxTimesPerID,uniqueId);
     medianAreaLarvae = arrayfun(@(x) median(areaFile(areaFile(:,1)==x,3)), uniqueId);
     morpwidLarvae = arrayfun(@(x) median(morpwidFile(morpwidFile(:,1)==x,3)), uniqueId);
+    medianSpeedLarvae = arrayfun(@(x) median(speedFile085(speedFile085(:,1)==x,3)), uniqueId);
+    perc80SpeedLarvae = arrayfun(@(x) prctile(speedFile085(speedFile085(:,1)==x,3),80), uniqueId);
+    maxSpeedLarvae = arrayfun(@(x) max(speedFile085(speedFile085(:,1)==x,3)), uniqueId);
     
     [angleInitVector,angleLastVector]=calculateInitAndLastDirectionPerID(xFile,yFile,minTimesPerID,maxTimesPerID,uniqueId);
     
-    tableSummaryFeaturesRaw = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth'});
+    tableSummaryFeaturesRaw = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae,maxSpeedLarvae,perc80SpeedLarvae,medianSpeedLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth','maxSpeed','perc80Speed','medianSpeed'});
     
     
     %%%% REMOVE X BORDERS LARVAE %%%%% (most likely artifacts)
@@ -73,7 +76,8 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngle,anglesTail2Head_RoundT,~,posTailLarvae_RoundT] = calculateLarvaeOrientations(xFile,yFile,dataSpine);
 
     idToChange = ismember(larvaeAngle(:,1:2),anglesTail2Head_RoundT(:,1:2),'rows');
-    larvaeAngle(idToChange,:)=anglesTail2Head_RoundT;
+    idToCacht = ismember(anglesTail2Head_RoundT(:,1:2),larvaeAngle(:,1:2),'rows');
+    larvaeAngle(idToChange,:)=anglesTail2Head_RoundT(idToCacht,:);
     larvaeAngle=sortrows(larvaeAngle);
 
     %% Probability of larvae heading one direction and change the trajectory to another possible direction
@@ -86,6 +90,9 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
     [orderedLarvaePerStatesRunStopTurn] = calculateTurningRate(anglesTail2Head_RoundT,posTailLarvae_RoundT,thresholdAngle,thresholdDistance);
     nMovStages = 3; % run - stop - turn
     [matrixProbMotionStates,transitionMatrixMotionStates]=calculateProbabilityOfOrientation(orderedLarvaePerStatesRunStopTurn,nMovStages);
+
+    %Proportion of turnings depending on the larvae orientation
+    [runRatePerOrient,stopRatePerOrient,turningRatePerOrient] = calculateTurningRatePerOrientation(orderedLarvaePerStatesRunStopTurn,orderedAllLarvOrientPerSec);
 
     %% Calculate crawling agility and reorientation agility based on (Günther, M. et al. 2016, Scientific Reports), basically, speed at every state (running forward or turning)
 
@@ -141,12 +148,14 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
                 'avgSpeedPerOrientation','stdSpeedPerOrientation','avgSpeed085PerOrientation','stdSpeed085PerOrientation',...
                 'avgCrabSpeedPerOrientation','stdCrabSpeedPerOrientation','avgCurvePerOrientation','stdCurvePerOrientation',...
                 'meanAngularSpeedPerT','stdAngularSpeedPerT','semAngularSpeedPerT','avgStdAngularSpeed','avgMeanAngularSpeed',...
-                'avgSemAngularSpeed','angularSpeed','avgAngularSpeedPerOrientation','stdAngularSpeedPerOrientation')
+                'avgSemAngularSpeed','angularSpeed','avgAngularSpeedPerOrientation','stdAngularSpeedPerOrientation',...
+                'runRatePerOrient','stopRatePerOrient','turningRatePerOrient','tableSummaryFeatures')
 
-    
-% else
-%      load(fullfile(dirPath,'navigationResults.mat'));
-% end
+%     
+else
+    load(fullfile(dirPath,'navigationResults.mat'));
+
+end
 
 %%%%%% POSSIBLE IDEAS TO IMPLEMENT IN FUTURE %%%%%%
 
