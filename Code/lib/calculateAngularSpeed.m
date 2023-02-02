@@ -1,4 +1,4 @@
-function [meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,avgSemAngularSpeed,angularSpeed,meanAngularAccelerationPerT,angularAcceleration] = calculateAngularSpeed (larvaeAngle)
+function [meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgStdAngularSpeed,avgMeanAngularSpeed,avgSemAngularSpeed,angularSpeed,meanAngularAccelerationPerT,semAngularAccelerationPerT,angularAcceleration] = calculateAngularSpeed (larvaeAngle)
     
     angularSpeed = larvaeAngle;
     angularSpeed(:,3)=0;
@@ -33,6 +33,8 @@ function [meanAngularSpeedPerT,stdAngularSpeedPerT,semAngularSpeedPerT,avgStdAng
     meanAngularSpeedPerT = arrayfun(@(x) mean([angularSpeed(ismember(angularSpeed(:,2),x),3)]), uniqT);
 
     meanAngularAccelerationPerT = arrayfun(@(x) mean([angularAcceleration(ismember(angularAcceleration(:,2),x),3)]), uniqT);
+    semAngularAccelerationPerT = arrayfun(@(x) std([angularAcceleration(ismember(angularAcceleration(:,2),x),3)])/sqrt(sum(ismember(angularAcceleration(:,2),x))), uniqT);
+
 
     stdAngularSpeedPerT = arrayfun(@(x) std([angularSpeed(ismember(angularSpeed(:,2),x),3)]), uniqT);
     semAngularSpeedPerT = arrayfun(@(x) std([angularSpeed(ismember(angularSpeed(:,2),x),3)])/sqrt(sum(ismember(angularSpeed(:,2),x))), uniqT);
