@@ -1,4 +1,4 @@
-function binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, intermediateTime, endTime,xAxisLimits,yFile)
+function binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, intermediateTime, endTime,xAxisLimits,yFile,tableSummaryFeatures,xBorders,yBorders)
     
     idInitT=ismember(round(yFile(:,2)),initTime);
     idIntermT=ismember(round(yFile(:,2)),intermediateTime);
@@ -9,7 +9,16 @@ function binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, i
     
     coordInitT = arrayfun(@(x)  mean(yFile(idInitT & ismember(yFile(:,1),x),3),'omitnan'),labelsInitT);
     coordIntermT = arrayfun(@(x)  mean(yFile(idIntermT & ismember(yFile(:,1),x),3),'omitnan'),labelsIntermT);
+    %add the larvae that found the borders between time 0 and intermediate
+    %timepoint
+    larvaeFindingBordersIntermT = (tableSummaryFeatures.maxTime < intermediateTime) & (tableSummaryFeatures.yCoordEnd < xBorders(1) | tableSummaryFeatures.yCoordEnd > xBorders(2) |  tableSummaryFeatures.xCoordEnd < yBorders(1) | tableSummaryFeatures.xCoordEnd > yBorders(2));     
+    coordIntermT = [coordIntermT; tableSummaryFeatures.yCoordEnd(larvaeFindingBordersIntermT)];
+    %add the larvae that found the borders between init and end
     coordEndT = arrayfun(@(x)  mean(yFile(idEndT & ismember(yFile(:,1),x),3),'omitnan'),labelsEndT);
+    larvaeFindingBordersEndT = (tableSummaryFeatures.maxTime < endTime) & (tableSummaryFeatures.yCoordEnd < xBorders(1) | tableSummaryFeatures.yCoordEnd > xBorders(2) |  tableSummaryFeatures.xCoordEnd < yBorders(1) | tableSummaryFeatures.xCoordEnd > yBorders(2)); 
+    coordEndT = [coordEndT; tableSummaryFeatures.yCoordEnd(larvaeFindingBordersEndT)];
+
+    
     
 %     numberOfBins = 5;
     numberOfBins = 3;
@@ -17,23 +26,23 @@ function binsXdistributionInitEnd=calculatePositionDistributionXaxis(initTime, i
     limitRight = xAxisLimits(end);
     bins = limitLeft:-(limitLeft-limitRight)/numberOfBins:limitRight;
     
-    bin1_10s = sum(arrayfun(@(x) x>=bins(1) & x<bins(2),coordInitT))/length(coordInitT);
+    bin1_10s = sum(arrayfun(@(x) x<bins(2),coordInitT))/length(coordInitT);
     bin2_10s = sum(arrayfun(@(x) x>=bins(2) & x<bins(3),coordInitT))/length(coordInitT);
-    bin3_10s = sum(arrayfun(@(x) x>=bins(3) & x<=bins(4),coordInitT))/length(coordInitT);
+    bin3_10s = sum(arrayfun(@(x) x>=bins(3),coordInitT))/length(coordInitT);
 %     bin4_10s = sum(arrayfun(@(x) x>=bins(4) & x<bins(5),coordInitT))/length(coordInitT);
 %     bin5_10s = sum(arrayfun(@(x) x>=bins(5) & x<=bins(6),coordInitT))/length(coordInitT);
 
-    bin1_300s = sum(arrayfun(@(x) x>=bins(1) & x<bins(2),coordIntermT))/length(coordIntermT);
+    bin1_300s = sum(arrayfun(@(x) x<bins(2),coordIntermT))/length(coordIntermT);
     bin2_300s = sum(arrayfun(@(x) x>=bins(2) & x<bins(3),coordIntermT))/length(coordIntermT);
-    bin3_300s = sum(arrayfun(@(x) x>=bins(3) & x<=bins(4),coordIntermT))/length(coordIntermT);
+    bin3_300s = sum(arrayfun(@(x) x>=bins(3),coordIntermT))/length(coordIntermT);
 %     bin4_300s = sum(arrayfun(@(x) x>=bins(4) & x<bins(5),coordIntermT))/length(coordIntermT);
 %     bin5_300s = sum(arrayfun(@(x) x>=bins(5) & x<=bins(6),coordIntermT))/length(coordIntermT);
 
     
 
-    bin1_590s = sum(arrayfun(@(x) x>=bins(1) & x<bins(2),coordEndT))/length(coordEndT);
+    bin1_590s = sum(arrayfun(@(x) x<bins(2),coordEndT))/length(coordEndT);
     bin2_590s = sum(arrayfun(@(x) x>=bins(2) & x<bins(3),coordEndT))/length(coordEndT);
-    bin3_590s = sum(arrayfun(@(x) x>=bins(3) & x<=bins(4),coordEndT))/length(coordEndT);
+    bin3_590s = sum(arrayfun(@(x) x>=bins(3),coordEndT))/length(coordEndT);
 %     bin4_590s = sum(arrayfun(@(x) x>=bins(4) & x<bins(5),coordEndT))/length(coordEndT);
 %     bin5_590s = sum(arrayfun(@(x) x>=bins(5) & x<=bins(6),coordEndT))/length(coordEndT);
 %     
