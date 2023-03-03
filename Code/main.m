@@ -8,8 +8,8 @@ addpath(genpath('lib'))
 experiments = {'n_1ul1000EA_600s@n','n_freeNavigation_600s@n'};
 genotypes = {'thG@Uempty','thG@UG2019S','thG@UaSynA53T'};
 
-path2search1=dir(fullfile('..','Choreography_results','**',genotypes{1},'**',experiments{1},'2022*'));
-path2search2=dir(fullfile('..','Choreography_results','**',genotypes{2},'**',experiments{1},'2022*'));
+path2search1=dir(fullfile('..','Choreography_results','**',genotypes{1},'**',experiments{1},'2023*'));
+path2search2=dir(fullfile('..','Choreography_results','**',genotypes{2},'**',experiments{1},'2023*'));
 path2search3=dir(fullfile('..','Choreography_results','**',genotypes{3},'**',experiments{1},'2022*'));
 
 path2search4=dir(fullfile('..','Choreography_results','**',genotypes{1},'**',experiments{2},'2022*'));
@@ -24,7 +24,8 @@ idsG2019S=[size(path2search1,1)+1:size([path2search1;path2search2],1),size([path
 idsA53T=[size([path2search1;path2search2],1)+1:size([path2search1;path2search2;path2search3],1),size([path2search1;path2search2;path2search3;path2search4;path2search5],1)+1:size(totalDirectories,1)];
 
 
-
+%%% INITIALIZING ALL VARIABLES %%%
+averageLarvaeLength = zeros(size(totalDirectories,1),1);
 navigationIndex_Xaxis = zeros(size(totalDirectories,1),1);
 navigationIndex_Yaxis = zeros(size(totalDirectories,1),1);
 propLarvInAnglGroup = cell(size(totalDirectories,1),1);
@@ -94,7 +95,7 @@ turningRatePerOrient= cell(size(totalDirectories,1),1);
 
 tableSummaryFeatures = cell(size(totalDirectories,1),1);
 
-for nDir=1:size(totalDirectories,1)
+parfor nDir=1:size(totalDirectories,1)
 
     try
         [navigationIndex_Xaxis(nDir),navigationIndex_Yaxis(nDir),propLarvInAnglGroup{nDir},matrixProbOrientation{nDir},transitionMatrixOrientation{nDir},matrixProbMotionStates{nDir},transitionMatrixMotionStates{nDir},binsXdistributionInitEnd{nDir},...
@@ -106,7 +107,7 @@ for nDir=1:size(totalDirectories,1)
         avgSpeedPerOrientation{nDir},stdSpeedPerOrientation{nDir},avgSpeed085PerOrientation{nDir},stdSpeed085PerOrientation{nDir},...       
         avgCrabSpeedPerOrientation{nDir},stdCrabSpeedPerOrientation{nDir},avgCurvePerOrientation{nDir},stdCurvePerOrientation{nDir},...
         meanAngularSpeedPerT{nDir},stdAngularSpeedPerT{nDir},semAngularSpeedPerT{nDir},avgMeanAngularSpeed(nDir),avgSemAngularSpeed(nDir),avgStdAngularSpeed(nDir),angularSpeed{nDir},...
-        avgAngularSpeedPerOrientation{nDir},stdAngularSpeedPerOrientation{nDir},runRatePerOrient{nDir},stopRatePerOrient{nDir},turningRatePerOrient{nDir},tableSummaryFeatures{nDir}]=extractFeaturesPerExperiment(fullfile(totalDirectories(nDir).folder,totalDirectories(nDir).name));
+        avgAngularSpeedPerOrientation{nDir},stdAngularSpeedPerOrientation{nDir},runRatePerOrient{nDir},stopRatePerOrient{nDir},turningRatePerOrient{nDir},averageLarvaeLength(nDir),tableSummaryFeatures{nDir}]=extractFeaturesPerExperiment(fullfile(totalDirectories(nDir).folder,totalDirectories(nDir).name));
         
     catch
          disp(['error in ' fullfile(totalDirectories(nDir).folder,totalDirectories(nDir).name) ]);
@@ -453,25 +454,52 @@ ylabel('Angular speed (degrees/s)');
 ylim([0,20])
 set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
 
-%% PLOT speed 085 (normalized by area) / time
-h6 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+%% PLOT speed (normalized by larvae length) / time
+h6_1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
 paintError=1;
-avgSpeed085RoundTNormByArea = cellfun(@(x,y) x./y,avgSpeed085RoundT,avgAreaRoundT,'UniformOutput',false);
-semSpeed085RoundTNormByArea = cellfun(@(x,y) x./y,semSpeed085RoundT,avgAreaRoundT,'UniformOutput',false);
+% avgSpeedRoundTNormByArea = cellfun(@(x,y) x./y,avgSpeedRoundT,avgAreaRoundT,'UniformOutput',false);
+% semSpeedRoundTNormByArea = cellfun(@(x,y) x./y,semSpeedRoundT,avgAreaRoundT,'UniformOutput',false);
+avgSpeedRoundTNormByArea = cellfun(@(x,y) x./y,avgSpeedRoundT,num2cell(averageLarvaeLength),'UniformOutput',false);
+semSpeedRoundTNormByArea = cellfun(@(x,y) x./y,semSpeedRoundT,num2cell(averageLarvaeLength),'UniformOutput',false);
+
+subplot(1,2,1);hold on
+plotSpeedVersusT(T,avgSpeedRoundTNormByArea,semSpeedRoundTNormByArea,idsEA,idsTH,idsG2019S,idsA53T,LineStyleEA,coloursEA,paintError)
+legend({'','','','Control EA','G2019S EA','A53T EA'})
+xlabel('Time (s)')
+ylabel('Speed / larva length (1/s)');
+ylim([0 0.2])
+set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
+
+subplot(1,2,2);
+plotSpeedVersusT(T,avgSpeedRoundTNormByArea,semSpeedRoundTNormByArea,idsFreeNav,idsTH,idsG2019S,idsA53T,LineStyleFreeN,coloursFreeN,paintError)
+legend({'','','','Control FreeNav','G2019S FreeNav','A53T FreeNav'})
+xlabel('Time (s)')
+ylabel('Speed / larva length (1/s)');
+ylim([0 0.2])
+set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
+
+%% PLOT speed 085 (normalized by larvae length) / time
+h6_2 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+paintError=1;
+% avgSpeed085RoundTNormByArea = cellfun(@(x,y) x./y,avgSpeed085RoundT,avgAreaRoundT,'UniformOutput',false);
+% semSpeed085RoundTNormByArea = cellfun(@(x,y) x./y,semSpeed085RoundT,avgAreaRoundT,'UniformOutput',false);
+avgSpeed085RoundTNormByArea = cellfun(@(x,y) x./y,avgSpeed085RoundT,num2cell(averageLarvaeLength),'UniformOutput',false);
+semSpeed085RoundTNormByArea = cellfun(@(x,y) x./y,semSpeed085RoundT,num2cell(averageLarvaeLength),'UniformOutput',false);
+
 subplot(1,2,1);hold on
 plotSpeedVersusT(T,avgSpeed085RoundTNormByArea,semSpeed085RoundTNormByArea,idsEA,idsTH,idsG2019S,idsA53T,LineStyleEA,coloursEA,paintError)
 legend({'','','','Control EA','G2019S EA','A53T EA'})
 xlabel('Time (s)')
-ylabel('Speed085 / area (mm/s)');
-ylim([0.1 0.35])
+ylabel('Speed085 / larva length (1/s)');
+ylim([0 0.2])
 set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
 
 subplot(1,2,2);
 plotSpeedVersusT(T,avgSpeed085RoundTNormByArea,semSpeed085RoundTNormByArea,idsFreeNav,idsTH,idsG2019S,idsA53T,LineStyleFreeN,coloursFreeN,paintError)
 legend({'','','','Control FreeNav','G2019S FreeNav','A53T FreeNav'})
 xlabel('Time (s)')
-ylabel('Speed085 / area (mm/s)');
-ylim([0.1 0.35])
+ylabel('Speed085 / larva length (1/s)');
+ylim([0 0.2])
 set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
 
 
@@ -596,7 +624,7 @@ set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
 % ylim([0 300])
 % xlim([0.1 0.8])
 
-isPrintOn=1;
+isPrintOn=0;
 folder2save = fullfile('..','Results');
 
 if isPrintOn == 1
@@ -610,39 +638,37 @@ if isPrintOn == 1
     savefig(h4,fullfile(folder2save,'Figures','crabSpeed_vs_T.fig'))
     print(h5,fullfile(folder2save,'Figures','angularSpeed_vs_T.png'),'-dpng','-r300')
     savefig(h5,fullfile(folder2save,'Figures','angularSpeed_vs_T.fig'))
-    print(h6,fullfile(folder2save,'Figures','speed085_normArea_vs_T.png'),'-dpng','-r300')
-    savefig(h6,fullfile(folder2save,'Figures','speed085_normArea_vs_T.fig'))
+    print(h6_1,fullfile(folder2save,'Figures','speed_normArea_vs_T.png'),'-dpng','-r300')
+    savefig(h6_1,fullfile(folder2save,'Figures','speed_normArea_vs_T.fig'))
+    print(h6_2,fullfile(folder2save,'Figures','speed085_normArea_vs_T.png'),'-dpng','-r300')
+    savefig(h6_2,fullfile(folder2save,'Figures','speed085_normArea_vs_T.fig'))
     print(h7,fullfile(folder2save,'Figures','curve_vs_T.png'),'-dpng','-r300')
     savefig(h7,fullfile(folder2save,'Figures','curve_vs_T.fig'))
     print(h8,fullfile(folder2save,'Figures','distributionXaxis.png'),'-dpng','-r300')
     savefig(h8,fullfile(folder2save,'Figures','distributionXaxis.fig'))
 
+
+    clearvars -except folder2save tabCurveOrientation tabCrabSpeedOrientation tabSpeedOrientation tabAngularSpeedOrientation tabSpeed085Orientation tabNavigation tabMeanTransitionMatrixOrient tabMeanTransitionMatrixMov tabArea tabCurve tabSpeed tabCrabSpeed tabSpeed085 tabAngSpeed tabPercAngStates tabPercMovStates tabMovRatePerOrient
+
+    writetable(tabNavigation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','NavIndex','Range','B2','WriteRowNames',true)
+    writetable(tabArea,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Area','Range','B2','WriteRowNames',true)    
+    writetable(tabSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed','Range','B2','WriteRowNames',true)
+    writetable(tabSpeed085,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed085','Range','B2','WriteRowNames',true)
+    writetable(tabCrabSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CrabSpeed','Range','B2','WriteRowNames',true)
+    writetable(tabAngSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AngSpeed','Range','B2','WriteRowNames',true)
+    writetable(tabCurve,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Curve','Range','B2','WriteRowNames',true)
+    writetable(tabMeanTransitionMatrixOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixOrientation','Range','B2','WriteRowNames',true)
+    writetable(tabMeanTransitionMatrixMov,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixMovStates','Range','B2','WriteRowNames',true)
+    writetable(tabPercAngStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercAngStates','Range','B2','WriteRowNames',true)
+    writetable(tabPercMovStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercMovStates','Range','B2','WriteRowNames',true)
+    writetable(tabMovRatePerOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','RateMovStates','Range','B2','WriteRowNames',true)
+    writetable(tabSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','SpeedPerOrientation','Range','B2','WriteRowNames',true)
+    writetable(tabSpeed085Orientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed085PerOrientation','Range','B2','WriteRowNames',true)
+    writetable(tabCrabSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CrabSpeedPerOrientation','Range','B2','WriteRowNames',true)
+    writetable(tabAngularSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AngSpeedPerOrientation','Range','B2','WriteRowNames',true)
+    writetable(tabCurveOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CurvePerOrientation','Range','B2','WriteRowNames',true)
+
 end
-
-clearvars -except folder2save tabCurveOrientation tabCrabSpeedOrientation tabSpeedOrientation tabAngularSpeedOrientation tabSpeed085Orientation tabNavigation tabMeanTransitionMatrixOrient tabMeanTransitionMatrixMov tabArea tabCurve tabSpeed tabCrabSpeed tabSpeed085 tabAngSpeed tabPercAngStates tabPercMovStates tabMovRatePerOrient
-
-writetable(tabNavigation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','NavIndex','Range','B2','WriteRowNames',true)
-
-writetable(tabArea,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Area','Range','B2','WriteRowNames',true)
-
-writetable(tabSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed','Range','B2','WriteRowNames',true)
-writetable(tabSpeed085,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed085','Range','B2','WriteRowNames',true)
-writetable(tabCrabSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CrabSpeed','Range','B2','WriteRowNames',true)
-writetable(tabAngSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AngSpeed','Range','B2','WriteRowNames',true)
-writetable(tabCurve,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Curve','Range','B2','WriteRowNames',true)
-
-writetable(tabMeanTransitionMatrixOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixOrientation','Range','B2','WriteRowNames',true)
-writetable(tabMeanTransitionMatrixMov,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixMovStates','Range','B2','WriteRowNames',true)
-writetable(tabPercAngStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercAngStates','Range','B2','WriteRowNames',true)
-writetable(tabPercMovStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercMovStates','Range','B2','WriteRowNames',true)
-
-writetable(tabMovRatePerOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','RateMovStates','Range','B2','WriteRowNames',true)
-
-writetable(tabSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','SpeedPerOrientation','Range','B2','WriteRowNames',true)
-writetable(tabSpeed085Orientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed085PerOrientation','Range','B2','WriteRowNames',true)
-writetable(tabCrabSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CrabSpeedPerOrientation','Range','B2','WriteRowNames',true)
-writetable(tabAngularSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AngSpeedPerOrientation','Range','B2','WriteRowNames',true)
-writetable(tabCurveOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CurvePerOrientation','Range','B2','WriteRowNames',true)
 
 
 
