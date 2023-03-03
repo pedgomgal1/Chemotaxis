@@ -20,7 +20,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
         dirPath=varargin{1};
     end
 
-% if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
+if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
 
     %% Load files
     [xFile, yFile, areaFile, speedFile, speedFile085, crabSpeedFile,curveFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
@@ -155,9 +155,9 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
                 'runRatePerOrient','stopRatePerOrient','turningRatePerOrient','tableSummaryFeatures','averageLarvaeLength')
 
     
-% else
-%     load(fullfile(dirPath,'navigationResults.mat'));
-% end
+else
+    load(fullfile(dirPath,'navigationResults.mat'));
+end
 
 %%%%%% Work on progress - RANDOM FOREST after AUTOENCODING behaviours %%%%%%
 
