@@ -3,13 +3,15 @@ clear all
 
 addpath(genpath('lib'))
 
-path2search1=fullfile('..','Choreography_results','**','n_freeNavigation*','2022*');
-path2search2=fullfile('..','Choreography_results','**','n_1ul1000EA_600s@n','2022*');
+% path2search1=fullfile('..','Choreography_results','**','n_freeNavigation*','2022*');
+% path2search2=fullfile('..','Choreography_results','**','n_1ul1000EA_600s@n','2022*');
+% totalDirectories=[dir(path2search1);dir(path2search2)];
 
+rootPath = 'C:\Users\Pedro Gomez Galvez\Documents\Lab\ParkinsonConnectomics\ReactionAfterStimulus\Choreography-results\BO1\';
+path2search2=fullfile(rootPath,'**','n_blueLightAvoidance_10s_30s_10s_2pulses@n','2022*');
+totalDirectories=dir(path2search2);
 
-totalDirectories=[dir(path2search1);dir(path2search2)];
-
-parpool(8);
+% parpool(8);
 parfor nFile = 1:size(totalDirectories,1)
     try
         %disp(['starting - ' num2str(nFile) ' - ' totalDirectories(nFile).name])

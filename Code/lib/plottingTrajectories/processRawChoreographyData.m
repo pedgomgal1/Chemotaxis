@@ -13,8 +13,8 @@ function processRawChoreographyData(varargin)
     end
     
     %% LOAD CHOREOGRAPHY FILES
-    [xFile, yFile, areaFile, speedFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
-    
+    [xFile, yFile, areaFile, speedFile, speedFile085,crabSpeedFile, curveFile,castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
+        
     %% REORGANIZE UNIQUE LARVAE IDs
     %%table summarizing larvae properties to compare times, position and
     %%geometrical properties
@@ -28,28 +28,35 @@ function processRawChoreographyData(varargin)
     lastCoordYLarvae = arrayfun(@(x,y) mean(yFile(yFile(:,2)==x & yFile(:,1)==y,3)),maxTimesPerID,uniqueId);
     medianAreaLarvae = arrayfun(@(x) median(areaFile(areaFile(:,1)==x,3)), uniqueId);
     morpwidLarvae = arrayfun(@(x) median(morpwidFile(morpwidFile(:,1)==x,3)), uniqueId);
+    medianSpeedLarvae = arrayfun(@(x) median(speedFile085(speedFile085(:,1)==x,3)), uniqueId);
+    perc80SpeedLarvae = arrayfun(@(x) prctile(speedFile085(speedFile085(:,1)==x,3),80), uniqueId);
+    maxSpeedLarvae = arrayfun(@(x) max(speedFile085(speedFile085(:,1)==x,3)), uniqueId);
     
     [angleInitVector,angleLastVector]=calculateInitAndLastDirectionPerID(xFile,yFile,minTimesPerID,maxTimesPerID,uniqueId);
     
-    tableSummaryFeaturesRaw = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth'});
+    tableSummaryFeaturesRaw = array2table([uniqueId,minTimesPerID,maxTimesPerID,initCoordXLarvae,lastCoordXLarvae,initCoordYLarvae,lastCoordYLarvae,angleInitVector,angleLastVector,medianAreaLarvae,morpwidLarvae,maxSpeedLarvae,perc80SpeedLarvae,medianSpeedLarvae],'VariableNames',{'id','minTime','maxTime','xCoordInit','xCoordEnd','yCoordInit','yCoordEnd','directionLarvaInit','directionLarvaLast','area','morpWidth','maxSpeed','perc80Speed','medianSpeed'});
+       
+    %%%% REMOVE X BORDERS LARVAE %%%%% (most likely artifacts)
+    thresholdTime=30; %sec
+    borderXIds = tableSummaryFeaturesRaw.yCoordInit < 35 | tableSummaryFeaturesRaw.yCoordInit > 190;
+    borderYIds = tableSummaryFeaturesRaw.xCoordInit < 10 | tableSummaryFeaturesRaw.xCoordInit > 160;
+    idsFewTime= (tableSummaryFeaturesRaw.maxTime - tableSummaryFeaturesRaw.minTime) < thresholdTime;
+
+    [tableSummaryFeatures,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile]=removeBorderIds((borderXIds | borderYIds | idsFewTime),tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile);
+   
+%     %%%% UNIFY LARVAE LABELS %%%%
+%     file2save=fullfile(dirPath,'proofreadOrderedLarvae.mat');
+%     if ~exist(file2save,'file')
+%         [tableSummaryFeatures,unifiedLabels] = reorganizeUniqueIDs(tableSummaryFeaturesRaw);
+%         save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels')
+%     else
+%         load(file2save,'curatedLabels')
+%         unifiedLabels=curatedLabels;
+%         tableSummaryFeatures=updateTableProperties(tableSummaryFeaturesRaw,curatedLabels);
+%     end
     
-    %%%%% REMOVE X BORDERS LARVAE %%%%% (most likely artifacts)
-    borderIds = tableSummaryFeaturesRaw.yCoordInit < 35 | tableSummaryFeaturesRaw.yCoordInit > 190;
-    [tableSummaryFeaturesRaw,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile]=removeBorderIds(borderIds,tableSummaryFeaturesRaw,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
-    
-    %%%% UNIFY LARVAE LABELS %%%%
-    file2save=fullfile(dirPath,'proofreadOrderedLarvae.mat');
-    if ~exist(file2save,'file')
-        [tableSummaryFeatures,unifiedLabels] = reorganizeUniqueIDs(tableSummaryFeaturesRaw);
-        save(fullfile(dirPath,'automaticOrderedLarvae.mat'),'unifiedLabels')
-    else
-        load(file2save,'curatedLabels')
-        unifiedLabels=curatedLabels;
-        tableSummaryFeatures=updateTableProperties(tableSummaryFeaturesRaw,curatedLabels);
-    end
-    
-    %%%% UPDATE LARVAE IDs INTO FILES
-    [xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlinesLarvaeUpdated,castFileUpdated]=updateIDsOfFiles(unifiedLabels,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
+%     %%%% UPDATE LARVAE IDs INTO FILES
+%     [xFileUpdated,yFileUpdated,speedFileUpdated,dataSpineUpdated,cellOutlinesLarvaeUpdated,castFileUpdated]=updateIDsOfFiles(unifiedLabels,xFile,yFile,speedFile,dataSpine,cellOutlinesLarvae,castFile);
     
     % %%%% LOAD INIT RAW IMAGE %%%%
     % imgName = dir(fullfile(dirPath,'*.png'));
@@ -57,26 +64,26 @@ function processRawChoreographyData(varargin)
     imgInit=ones(1728,2350);
     
     %%%% SAVE LARVAE TRAJECTORY (IMAGE SEQUENCE)
-    folder2save = fullfile(filesChoreography(1).folder,'imageSequenceLarvae');
-    folder2saveRaw = fullfile(filesChoreography(1).folder,'imageSequenceLarvaeRaw');
+    folder2save = fullfile(dirPath,'imageSequenceLarvae');
+    folder2saveRaw = fullfile(dirPath,'imageSequenceLarvaeRaw');
     
     minTimeTraj = 0; %seconds
-    maxTimeTraj = 600; %seconds
+    maxTimeTraj = 90; %seconds
     maxLengthLarvaeTrajectory = 60; %seconds
     booleanSave = 1; %save==1, not save == 0 
-    if ~exist(folder2save,'dir') 
-        stepTimeTrack=1;
-        mkdir(folder2save)
-        if ~isempty(outlineFile)
-            plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,1)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
-        else
-            plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,unique(xFile(:,1)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
-        end
-    end
+%     if ~exist(folder2save,'dir') 
+%         stepTimeTrack=1;
+%         mkdir(folder2save)
+%         if ~isempty(outlineFile)
+%             plotTrajectoryLarvae(cellOutlinesLarvaeUpdated,xFileUpdated,yFileUpdated,unique(xFile(:,1)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
+%         else
+%             plotTrajectoryLarvae([],xFileUpdated,yFileUpdated,unique(xFile(:,1)),folder2save,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
+%         end
+%     end
     if ~exist(folder2saveRaw,'dir') 
-        stepTimeTrack=5;
+        stepTimeTrack=1;
         mkdir(folder2saveRaw)
-        if ~isempty(outlineFile)       
+        if ~isempty(cellOutlinesLarvae)       
             plotTrajectoryLarvae(cellOutlinesLarvae,xFile,yFile,unique(xFile(:,1)),folder2saveRaw,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
         else
             plotTrajectoryLarvae([],xFile,yFile,unique(xFile(:,1)),folder2saveRaw,imgInit,minTimeTraj,maxTimeTraj,maxLengthLarvaeTrajectory,stepTimeTrack,booleanSave)
