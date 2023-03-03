@@ -20,7 +20,7 @@ function [navigationIndex_Xaxis,navigationIndex_Yaxis,propLarvInAnglGroup,matrix
         dirPath=varargin{1};
     end
 
-if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
+% if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
 
     %% Load files
     [xFile, yFile, areaFile, speedFile, speedFile085, crabSpeedFile,curveFile, castFile, morpwidFile, dataSpine, cellOutlinesLarvae]=loadChoreographyFiles(dirPath);
@@ -103,7 +103,7 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
     %calculate speed in turn and run
     %how long the larvae take in indivudual casting states. How long the larvae take to abandon the a zone twice the length of the larvae?    
     
-    %% Calculate histogram of space occupied at the beginning, at and intermediate timepoint of the experiment (300seg) and at the end (only X axis, from 180 to 2160) - Check timePoint=10s and 600s
+    %% Calculate histogram of space occupied at the beginning, at an intermediate timepoint of the experiment (300seg) and at the end (only X axis, from 180 to 2160) - Check timePoint=10s, 300 and 590s
     initTime=10;
     midTime =300;
     endTime=590;
@@ -155,16 +155,11 @@ if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
                 'runRatePerOrient','stopRatePerOrient','turningRatePerOrient','tableSummaryFeatures','averageLarvaeLength')
 
     
-else
-    load(fullfile(dirPath,'navigationResults.mat'));
+% else
+%     load(fullfile(dirPath,'navigationResults.mat'));
+% end
 
-end
-
-%%%%%% Work on progress - RANDOM FOREST %%%%%%
-
-  %%% I don't trust in the accuracy of castFile because the larvae are pretty small and this parameter is high sensity.  
-%   %% measure number of casting in average
-%      [averageNumberOfCastingsTotal, averageNumberOfCastsWhen]=calculateAverageNumberOfCastings(castFile,xFile,yFile);        
+%%%%%% Work on progress - RANDOM FOREST after AUTOENCODING behaviours %%%%%%
 
 
 
