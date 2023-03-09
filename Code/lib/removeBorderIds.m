@@ -1,4 +1,4 @@
-function [tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile]=removeBorderIds(borderIds,tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile)
+function [tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile,turnOrCastStates]=removeBorderIds(borderIds,tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFile,areaFile,dataSpine,cellOutlinesLarvae,curveFile,castFile,turnOrCastStates)
 
     idsBoder2remove = tableSummaryFeaturesRaw.id(borderIds);
     tableSummaryFeaturesRaw(borderIds,:) = [];
@@ -15,10 +15,13 @@ function [tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFi
 
     if ~isempty(cellOutlinesLarvae)
         idSpine = ismember(dataSpine(:,1),uniqValidId);
+        idStates = ismember(turnOrCastStates(:,1),uniqValidId);
         
         castFile(ismember(castFile(:,1),idsBoder2remove),:)=[];
         curveFile(ismember(curveFile(:,1),idsBoder2remove),:)=[];
         dataSpine(~idSpine,:)=[];
+
+        turnOrCastStates(~idStates,:)=[];
         
         cellOutlinesLarvae(ismember(vertcat(cellOutlinesLarvae{:,1}),idsBoder2remove),:)=[];
     end

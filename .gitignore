@@ -64,3 +64,5 @@ data/*
 *.outline
 *.fig
 *.gif
+*.label
+*.pl
