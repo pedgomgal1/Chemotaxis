@@ -1,4 +1,4 @@
-function [averageNumberOfCastings]=calculateAverageNumberOfCastings(updatedCastFile,xFile,yFile)
+function [averageNumberOfCastings]=calculateAverageNumberOfCastings(castFile,xFile,yFile)
 
 %%%% accurate detection of the head casts and hunches requires simultaneous use of several variables: head angle, spine length, width, x, and y
 %%%% The following head angle thresholds are used: upper amplitude threshold 27°, lower amplitude threshold 20°, width threshold 0.15 s and gap threshold 0.67 s

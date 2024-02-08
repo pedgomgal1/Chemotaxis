@@ -55,7 +55,7 @@ Temporary Items
 *.tif
 *.mat
 *.xls
-Choreography/*
+Choreography_results/*
 T6 - BO1/*
 results/*
 data/*
