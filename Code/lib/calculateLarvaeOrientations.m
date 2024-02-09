@@ -1,4 +1,4 @@
-function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngleXY,anglesTail2Head_RoundT,curveTail2Mid2Head_RoundT,posTailLarvae_RoundT] = calculateLarvaeOrientations(xFile,yFile,spineFile)
+function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngleXY,anglesTail2Head_RoundT,curveTail2Mid2Head_RoundT,posTailLarvae_RoundT] = calculateLarvaeOrientations(xFile,yFile,spineFile,angThreshold)
 
     xFileRoundT = xFile;
     yFileRoundT = yFile;
@@ -80,10 +80,10 @@ function [propLarvInAnglGroup,orderedAllLarvOrientPerSec,larvaeAngleXY,anglesTai
     
         for nLar = 1:length(uniqLabelsSec)
             idLar = ismember(anglesTail2Head_RoundT(:,1),uniqLabelsSec(nLar));
-            group1 = anglesTail2Head_RoundT(idLar & idT,3)>=225 & anglesTail2Head_RoundT(idLar & idT,3) < 315;
-            group2 = anglesTail2Head_RoundT(idLar & idT,3)>=45 & anglesTail2Head_RoundT(idLar & idT,3) < 135;
-            group3 = anglesTail2Head_RoundT(idLar & idT,3)>=135 & anglesTail2Head_RoundT(idLar & idT,3) < 225;
-            group4 = anglesTail2Head_RoundT(idLar & idT,3)>=315 | anglesTail2Head_RoundT(idLar & idT,3) < 45;
+            group2 = anglesTail2Head_RoundT(idLar & idT,3)>=angThreshold(1) & anglesTail2Head_RoundT(idLar & idT,3) < angThreshold(2);  %right
+            group3 = anglesTail2Head_RoundT(idLar & idT,3)>=angThreshold(2) & anglesTail2Head_RoundT(idLar & idT,3) < angThreshold(3);  %top
+            group1 = anglesTail2Head_RoundT(idLar & idT,3)>=angThreshold(3) & anglesTail2Head_RoundT(idLar & idT,3) < angThreshold(4);  %left
+            group4 = anglesTail2Head_RoundT(idLar & idT,3)>=angThreshold(4) | anglesTail2Head_RoundT(idLar & idT,3) < angThreshold(1);  %bottom
             [~,idGroup]=max([group1,group2,group3,group4]);
             auxLarvInGroups(nLar,idGroup)=1;
         end
