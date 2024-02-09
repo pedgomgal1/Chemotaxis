@@ -8,11 +8,20 @@
 
   <h1>Chemotaxis analysis for <em>Drosophila</em> Larvae</h1>
 
-  This repository contains code for analyzing navigation-related parameters in <em>Drosophila</em> larvae, specifically focusing on measuring speed, acceleration, navigation index, and classifying behaviors such as run, stop, turn, cast, among others.</p>
+  This repository contains Matlab and Python [in progress] code for analysing navigation-related parameters in <em>Drosophila</em> larvae, specifically focusing on measuring navigation index, larvae orientation, speed, acceleration, and classifying behavioural events such as run, stop, turn, cast, among others.</p>
 
   <h2>Introduction</h2>
 
-  <p><em>Drosophila</em> larvae exhibit chemotactic behaviors, navigating in response to chemical stimuli. This repository provides tools to analyze the movement patterns of larvae in the presence and absence of an odorant, ethyl acetate, to understand their chemotactic responses.</p>
+  <p><em>Drosophila</em> larvae exhibit chemotactic behaviours, navigating in response to chemical stimuli. This repository provides tools to extract and analyse movement patterns of larvae in the presence and absence of an odorant (e.g. ethyl acetate as attractive odour). Our goal is to compare in an objective way, how mutant <em>Drosophila</em> larvae (e.g. Parkinson's disease larva models, or other neurodegenerative models), have impaired their behavioural natural responses in navigation and chemotaxis, by evaluating their motor and decision making abilities. The experimental procedure was designed as follows:
+    1. WT and mutant <em>Drosophila</em> larvae are synchronised and rinsed in equal conditions, same food, same humidity, same age, same incubator and light/darkness periods.
+    2. Groups of 30-45 larvae per genotype are gently separated from food and cleaned with water in synchronised timepoint. We worked with ~48h old larvae, i.e. late L1 - early L2 instar larva. 
+    3. Straight away, we place the larvae in the center of an square arena (20x20 cm^2). This arena is basically a plastic-made plate filled with 3% agar. This plate, is covered with a transparent lid where at the left side we place 4 equidistant odour patches (same size, same odour concentration).
+    4. This arena is placed in a behavioural rig, in controlled conditions of temperature, humidity and light (complete darkness), composed by a high-quality camera and IR-light illumination (invisible for larvae).
+    5. Inmediately, We start the larvae tracking by using the software MultiWormTracker (MWT, https://github.com/ZlaticLab/MWT).
+    6. MWT outputs are processed through Choreography software, giving us as output a set of files: X and Y coordinates of the larvae center of mass, speed, curvature, outlines, spine, etc.
+    7. These files are taken as input for our software, and analysed, giving as output a set of motor and navigation properties. Always analysing the larvae behaviour in a sense of group because individual larva tracking is very challenging and usually resulting in misinterpretation of the results because of tracking failures.
+  
+  </p>
 
   <h2>Experimental Setup</h2>
 
