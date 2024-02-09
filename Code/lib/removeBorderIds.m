@@ -13,16 +13,15 @@ function [tableSummaryFeaturesRaw,xFile,yFile,speedFile,speedFile085,crabSpeedFi
 
     uniqValidId = xFile(:,1);
 
+    if ~isempty(turnOrCastStates)
+        idStates = ismember(turnOrCastStates(:,1),uniqValidId);
+        turnOrCastStates(~idStates,:)=[];
+    end
     if ~isempty(cellOutlinesLarvae)
         idSpine = ismember(dataSpine(:,1),uniqValidId);
-        idStates = ismember(turnOrCastStates(:,1),uniqValidId);
-        
         castFile(ismember(castFile(:,1),idsBoder2remove),:)=[];
         curveFile(ismember(curveFile(:,1),idsBoder2remove),:)=[];
         dataSpine(~idSpine,:)=[];
-
-        turnOrCastStates(~idStates,:)=[];
-        
         cellOutlinesLarvae(ismember(vertcat(cellOutlinesLarvae{:,1}),idsBoder2remove),:)=[];
     end
 
