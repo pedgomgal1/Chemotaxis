@@ -80,10 +80,10 @@ function [navIndex_roundT,distIndex_Xaxis_roundT,distIndex_Yaxis_roundT,navIndex
     distIndex_Yaxis=sum(difY)/totalY;
 
     totalX_roundT = sum(absX_roundT);
-    distanceIndex_Xaxis_roundT = sum(difX_roundT)/totalX_roundT;
+    distIndex_Xaxis_roundT = sum(difX_roundT)/totalX_roundT;
 
     totalY_roundT = sum(absY_roundT);
-    distanceIndex_Yaxis_roundT = sum(difY_roundT)/totalY_roundT;
+    distIndex_Yaxis_roundT = sum(difY_roundT)/totalY_roundT;
 
     %% Nav. index (Gershow, et al. 2012).  <mean_speed_x> / <mean_speed>
     % Near +1. Navigation toward odour.
