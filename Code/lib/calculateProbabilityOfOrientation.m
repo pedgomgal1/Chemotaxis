@@ -1,4 +1,4 @@
-function [tab_matrixProbOrientation,tab_transitionMatrixOrientation]=calculateProbabilityOfOrientation(orderedAllLarvOrientPerSec,nOrientStages)
+function [tab_matrixProbOrientation,tab_transitionMatrixOrientation]=calculateProbabilityOfOrientation(orderedAllLarvOrientPerSec,nOrientStages,varNames,rowNames)
 
     matrixProbOrientation = zeros(nOrientStages,nOrientStages);
     uniqLabels = unique(orderedAllLarvOrientPerSec(:,1));
@@ -17,6 +17,6 @@ function [tab_matrixProbOrientation,tab_transitionMatrixOrientation]=calculatePr
     %TRANSITION MATRIX - MARKOV CHAIN
     transitionMatrixOrientation = matrixProbOrientation./sum(matrixProbOrientation);
 
-    tab_matrixProbOrientation=array2table(matrixProbOrientation,'VariableNames',{'current_LEFT','current_RIGHT','current_UP','current_DOWN'},'RowNames',{'next_LEFT','next_RIGHT','next_UP','next_DOWN'});
-    tab_transitionMatrixOrientation= array2table(transitionMatrixOrientation,'VariableNames',{'current_LEFT','current_RIGHT','current_UP','current_DOWN'},'RowNames',{'next_LEFT','next_RIGHT','next_UP','next_DOWN'});
+    tab_matrixProbOrientation=array2table(matrixProbOrientation,'VariableNames',varNames,'RowNames',rowNames);
+    tab_transitionMatrixOrientation= array2table(transitionMatrixOrientation,'VariableNames',varNames,'RowNames',rowNames);
 end
