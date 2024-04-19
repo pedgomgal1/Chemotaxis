@@ -204,10 +204,14 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         set(gca, 'XTick', [2,6,10,14], 'XTickLabel', {'10 s','200 s','400 s','590 s'});
         grid on;
         set(gca,'XGrid','off')
+        hold off
+      
         set(gcf, 'Units', 'inches');
         set(gcf, 'Position', [2, 2, 10, 6]); % Adjust width and height as needed
         set(gca, 'FontName', fontNameFigure, 'FontSize', fontSizeFigure);
-        set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
+        set(findall(h1,'-property','FontName'),'FontName',fontNameFigure);
+        set(findall(h1,'-property','FontSize'),'FontSize',fontSizeFigure);
+
 
 %%%% PLOT AVERAGE SPEED (NORMALIZED BY LENGTH) %%%%
         h2 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
@@ -218,24 +222,24 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         hold on
         plotPropertyVersusT(T,cat(2,varsEA_Control(:).avgSpeedRoundTGolay),cat(2,varsEA_G2019S(:).avgSpeedRoundTGolay),cat(2,varsEA_A53T(:).avgSpeedRoundTGolay),...,
             cat(2,varsEA_Control(:).semSpeedRoundTGolay),cat(2,varsEA_G2019S(:).semSpeedRoundTGolay),cat(2,varsEA_A53T(:).semSpeedRoundTGolay),LineStyleEA,coloursEA,paintError)
-        xlabel('Time (s)');ylabel('Speed (mm/s)');ylim([0 0.4]);title ('Chemotaxis')
+        xlabel({'Time (s)','Chemotaxis'});ylabel('Speed (mm/s)');ylim([0 0.4]);
 
         subplot(3,5,13:14);
         plotPropertyVersusT(T,cat(2,varsFreeNav_Control(:).avgSpeedRoundTGolay),cat(2,varsFreeNav_G2019S(:).avgSpeedRoundTGolay),cat(2,varsFreeNav_A53T(:).avgSpeedRoundTGolay),...,
             cat(2,varsFreeNav_Control(:).semSpeedRoundTGolay),cat(2,varsFreeNav_G2019S(:).semSpeedRoundTGolay),cat(2,varsFreeNav_A53T(:).semSpeedRoundTGolay),LineStyleEA,coloursEA,paintError)
-        xlabel('Time (s)');ylim([0 0.4]);title ('Free navigation')
+        xlabel({'Time (s)','Free navigation'});ylim([0 0.4]);
 
 
         subplot(3,5,6:7);
         hold on
         plotPropertyVersusT(T,cat(2,varsEA_Control(:).avgSpeedRoundTGolayNormalized),cat(2,varsEA_G2019S(:).avgSpeedRoundTGolayNormalized),cat(2,varsEA_A53T(:).avgSpeedRoundTGolayNormalized),...,
             cat(2,varsEA_Control(:).semSpeedRoundTGolayNormalized),cat(2,varsEA_G2019S(:).semSpeedRoundTGolayNormalized),cat(2,varsEA_A53T(:).semSpeedRoundTGolayNormalized),LineStyleEA,coloursEA,paintError)
-        xlabel('Time (s)');ylabel('Speed / length (1/s)');ylim([0 0.3]);title ('Chemotaxis')
+        xlabel({'Time (s)','Chemotaxis'});ylabel('Speed / length (1/s)');ylim([0 0.3]);
 
         subplot(3,5,8:9);
         plotPropertyVersusT(T,cat(2,varsFreeNav_Control(:).avgSpeedRoundTGolayNormalized),cat(2,varsFreeNav_G2019S(:).avgSpeedRoundTGolayNormalized),cat(2,varsFreeNav_A53T(:).avgSpeedRoundTGolayNormalized),...,
             cat(2,varsFreeNav_Control(:).semSpeedRoundTGolayNormalized),cat(2,varsFreeNav_G2019S(:).semSpeedRoundTGolayNormalized),cat(2,varsFreeNav_A53T(:).semSpeedRoundTGolayNormalized),LineStyleEA,coloursEA,paintError)
-        xlabel('Time (s)');ylim([0 0.3]);title ('Free navigation')
+        xlabel({'Time (s)','Free navigation'});ylim([0 0.3]);
 
 
         % subplot box chart average values
@@ -272,7 +276,7 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
         set(findall(gcf,'-property','FontSize'),'FontSize',fontSizeFigure);
 
-%%%% PLOT ANGULAR SPEED  and TORTUOSITY %%%%
+%% PLOT ANGULAR SPEED  and TORTUOSITY %%%%
         h3 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
         paintError = 'pooledStandardError';
         % subplot box chart average values
@@ -289,13 +293,12 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         subplot(3,2,3);hold on
         plotPropertyVersusT(T,cat(2,varsEA_Control(:).meanAngularSpeedPerT),cat(2,varsEA_G2019S(:).meanAngularSpeedPerT),cat(2,varsEA_A53T(:).meanAngularSpeedPerT),...,
             cat(2,varsEA_Control(:).semAngularSpeedPerT),cat(2,varsEA_G2019S(:).semAngularSpeedPerT),cat(2,varsEA_A53T(:).semAngularSpeedPerT),LineStyleEA,coloursEA,paintError)
-        xlabel('Time (s)');ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2)),title ('Chemotaxis')       
+        xlabel({'Time (s)','Chemotaxis'});ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))       
 
         subplot(3,2,4)
         plotPropertyVersusT(T,cat(2,varsFreeNav_Control(:).meanAngularSpeedPerT),cat(2,varsFreeNav_G2019S(:).meanAngularSpeedPerT),cat(2,varsFreeNav_A53T(:).meanAngularSpeedPerT),...,
             cat(2,varsFreeNav_Control(:).semAngularSpeedPerT),cat(2,varsFreeNav_G2019S(:).semAngularSpeedPerT),cat(2,varsFreeNav_A53T(:).semAngularSpeedPerT),LineStyleEA,coloursEA,paintError)
-        xlabel('Time (s)');ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2)),title ('Free Navigation')
-
+        xlabel({'Time (s)','Free navigation'});ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
         %%%% Tortuosity (Loveless 2018, Integrative & Comparative Biology)
         subplot(3,2,5)
 
@@ -307,7 +310,7 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
 
         
-%% TURNING/DECISION MAKING ANALYSIS ANALYSIS
+%% TURNING/DECISION MAKING ANALYSIS ANALYSIS PLOTS
         h4 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
         
         %Number of turns[change of direction > 45 dg] per larva per minute 
@@ -361,10 +364,165 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
         
 
+%% Polar histogram orientations;
 
-            
-            
-            
+        h5=figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+
+        %%Overall larvae orientation probability
+        % Orientation when turning. Row 3 comes to say that although larvae turn
+        % more when they are heading the odor, they do it less often (spend more
+        % time running toward the odor). Larvae start the turning more ofter when
+        % they are pointing opossite to the odour source.
+
+        subplot(4,3,1)
+        ticksAngles=0:45:360;
+        angleTicksLabels={'Right','45°','Top','135°','Left','225°','Bottom','270°'};
+        angle_ranges = [3*pi/4, 5*pi/4;-pi/4, pi/4;pi/4, 3*pi/4;5*pi/4, 7*pi/4];
+        num_bins=4;
+        radiusLimits=[0,0.5];arrayRTicks=[0,0.25,0.5,0.75,1];rTicksLabels={'','','','',''};
+        
+        avgOrientationPropControlEA= mean(vertcat(varsEA_Control(:).runRatePerOrient)+vertcat(varsEA_Control(:).turningRatePerOrient)+vertcat(varsEA_Control(:).stopRatePerOrient));
+        stdOrientationPropControlEA= std(vertcat(varsEA_Control(:).runRatePerOrient)+vertcat(varsEA_Control(:).turningRatePerOrient)+vertcat(varsEA_Control(:).stopRatePerOrient));
+        colourBins = repmat(coloursEA(1,:),4,1);
+        legendName=[];titleName=phenotypes_name{1};
+        plotPolarhistogram(avgOrientationPropControlEA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+                
+        subplot(4,3,2)
+        avgOrientationPropG2019SEA= mean(vertcat(varsEA_G2019S(:).runRatePerOrient)+vertcat(varsEA_G2019S(:).turningRatePerOrient)+vertcat(varsEA_G2019S(:).stopRatePerOrient));
+        stdOrientationPropG2019SEA= std(vertcat(varsEA_G2019S(:).runRatePerOrient)+vertcat(varsEA_G2019S(:).turningRatePerOrient)+vertcat(varsEA_G2019S(:).stopRatePerOrient));
+        colourBins = repmat(coloursEA(2,:),4,1);
+        legendName=[];titleName={'Probability of larvae orientation [Chemotaxis]','',phenotypes_name{2}};
+        plotPolarhistogram(avgOrientationPropG2019SEA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+                
+        subplot(4,3,3)
+        avgOrientationPropA53TEA= mean(vertcat(varsEA_A53T(:).runRatePerOrient)+vertcat(varsEA_A53T(:).turningRatePerOrient)+vertcat(varsEA_A53T(:).stopRatePerOrient));
+        stdOrientationPropA53TEA= std(vertcat(varsEA_A53T(:).runRatePerOrient)+vertcat(varsEA_A53T(:).turningRatePerOrient)+vertcat(varsEA_A53T(:).stopRatePerOrient));
+        colourBins = repmat(coloursEA(3,:),4,1);
+        legendName=[];titleName=phenotypes_name{3};
+        plotPolarhistogram(avgOrientationPropA53TEA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+
+        
+        ticksAngles=0:45:360;
+        angleTicksLabels={'Right','45°','Top','135°','Left','225°','Bottom','270°'};
+        angle_ranges = [3*pi/4, 5*pi/4;-pi/4, pi/4;pi/4, 3*pi/4;5*pi/4, 7*pi/4];
+        arrayRTicks=0:0.2:1;rTicksLabels={'','','','','',''};
+
+        
+        colourBins = repmat(coloursEA(1,:),4,1);
+        radiusLimits=[0,0.5];
+        legendName=[];titleName=[];
+        avgPropOrientPreTurningControl_EA = mean(vertcat(varsEA_Control(:).propOrientationPriorTurning));
+        avgPropOrientPostTurningControl_EA = mean(vertcat(varsEA_Control(:).propOrientationAfterTurning));
+        subplot(4,3,4)
+        plotPolarhistogram(avgPropOrientPreTurningControl_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,7)
+        plotPolarhistogram( (avgPropOrientPreTurningControl_EA./avgOrientationPropControlEA)/sum(avgPropOrientPreTurningControl_EA./avgOrientationPropControlEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,10)
+        plotPolarhistogram(avgPropOrientPostTurningControl_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % subplot(4,6,19)
+        % plotPolarhistogram( (avgPropOrientPostTurningControl_EA./avgOrientationPropControlEA)/sum(avgPropOrientPostTurningControl_EA./avgOrientationPropControlEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % 
+        avgPropOrientPreTurningG2019S_EA = mean(vertcat(varsEA_G2019S(:).propOrientationPriorTurning));
+        avgPropOrientPostTurningG2019S_EA = mean(vertcat(varsEA_G2019S(:).propOrientationAfterTurning));
+        subplot(4,3,5)
+        colourBins = repmat(coloursEA(2,:),4,1);
+        legendName=[];titleName={'Probability of larvae orientation pre-turning [Chemotaxis]'};
+        plotPolarhistogram(avgPropOrientPreTurningG2019S_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,8)
+        titleName={'Probability of larvae orientation pre-turning [Chemotaxis]','(normalized by time spent per orientation)'};
+        plotPolarhistogram((avgPropOrientPreTurningG2019S_EA./avgOrientationPropG2019SEA)/sum(avgPropOrientPreTurningG2019S_EA./avgOrientationPropG2019SEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,11)
+        titleName={'Probability of larvae orientation after turning [Chemotaxis]'};
+        plotPolarhistogram(avgPropOrientPostTurningG2019S_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % subplot(4,6,20)
+        % titleName={'Probability of larvae orientation after turning','(normalized by time spent per orientation)'};
+        % plotPolarhistogram((avgPropOrientPostTurningG2019S_EA./avgOrientationPropG2019SEA)/sum(avgPropOrientPostTurningG2019S_EA./avgOrientationPropG2019SEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % 
+        avgPropOrientPreTurningA53T_EA = mean(vertcat(varsEA_A53T(:).propOrientationPriorTurning));
+        avgPropOrientPostTurningA53T_EA = mean(vertcat(varsEA_A53T(:).propOrientationAfterTurning));
+        colourBins = repmat(coloursEA(3,:),4,1);
+        legendName=[];titleName=[];
+        subplot(4,3,6)
+        plotPolarhistogram(avgPropOrientPreTurningA53T_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        titleName=[];
+        subplot(4,3,9)
+        plotPolarhistogram((avgPropOrientPreTurningA53T_EA./avgOrientationPropA53TEA)/sum(avgPropOrientPreTurningA53T_EA./avgOrientationPropA53TEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,12)
+        plotPolarhistogram(avgPropOrientPostTurningA53T_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % subplot(4,6,21)
+        % plotPolarhistogram((avgPropOrientPostTurningA53T_EA./avgOrientationPropA53TEA)/sum(avgPropOrientPostTurningA53T_EA./avgOrientationPropA53TEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % 
+
+        %%FREE NAVIGATION
+        h6=figure;
+        subplot(4,3,1)
+        avgOrientationPropControlFreeNav= mean(vertcat(varsFreeNav_Control(:).runRatePerOrient)+vertcat(varsFreeNav_Control(:).turningRatePerOrient)+vertcat(varsFreeNav_Control(:).stopRatePerOrient));
+        stdOrientationPropControlFreeNav= std(vertcat(varsFreeNav_Control(:).runRatePerOrient)+vertcat(varsFreeNav_Control(:).turningRatePerOrient)+vertcat(varsFreeNav_Control(:).stopRatePerOrient));
+        colourBins = repmat(coloursEA(1,:),4,1);
+        legendName=[];titleName=phenotypes_name{1};
+        plotPolarhistogram(avgOrientationPropControlFreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+                
+        subplot(4,3,2)
+        avgOrientationPropG2019SFreeNav= mean(vertcat(varsFreeNav_G2019S(:).runRatePerOrient)+vertcat(varsFreeNav_G2019S(:).turningRatePerOrient)+vertcat(varsFreeNav_G2019S(:).stopRatePerOrient));
+        stdOrientationPropG2019SFreeNav= std(vertcat(varsFreeNav_G2019S(:).runRatePerOrient)+vertcat(varsFreeNav_G2019S(:).turningRatePerOrient)+vertcat(varsFreeNav_G2019S(:).stopRatePerOrient));
+        colourBins = repmat(coloursEA(2,:),4,1);
+        legendName=[];titleName={'Probability of larvae orientation [Free Nav]','',phenotypes_name{2}};
+        plotPolarhistogram(avgOrientationPropG2019SFreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+                
+        subplot(4,3,3)
+        avgOrientationPropA53TFreeNav= mean(vertcat(varsFreeNav_A53T(:).runRatePerOrient)+vertcat(varsFreeNav_A53T(:).turningRatePerOrient)+vertcat(varsFreeNav_A53T(:).stopRatePerOrient));
+        stdOrientationPropA53TFreeNav= std(vertcat(varsFreeNav_A53T(:).runRatePerOrient)+vertcat(varsFreeNav_A53T(:).turningRatePerOrient)+vertcat(varsFreeNav_A53T(:).stopRatePerOrient));
+        colourBins = repmat(coloursEA(3,:),4,1);
+        legendName=[];titleName=phenotypes_name{3};
+        plotPolarhistogram(avgOrientationPropA53TFreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+
+        colourBins = repmat(coloursEA(1,:),4,1);
+        radiusLimits=[0,0.5];
+        legendName=[];titleName=[];
+        avgPropOrientPreTurningControl_FreeNav = mean(vertcat(varsFreeNav_Control(:).propOrientationPriorTurning));
+        avgPropOrientPostTurningControl_FreeNav = mean(vertcat(varsFreeNav_Control(:).propOrientationAfterTurning));
+        subplot(4,3,4)
+        plotPolarhistogram(avgPropOrientPreTurningControl_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        titleName=[];
+        subplot(4,3,7)
+        plotPolarhistogram( (avgPropOrientPreTurningControl_FreeNav./avgOrientationPropControlFreeNav)/sum(avgPropOrientPreTurningControl_FreeNav./avgOrientationPropControlFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,10)
+        plotPolarhistogram(avgPropOrientPostTurningControl_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % subplot(4,6,22)
+        % plotPolarhistogram( (avgPropOrientPostTurningControl_FreeNav./avgOrientationPropControlFreeNav)/sum(avgPropOrientPostTurningControl_FreeNav./avgOrientationPropControlFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % 
+        avgPropOrientPreTurningG2019S_FreeNav = mean(vertcat(varsFreeNav_G2019S(:).propOrientationPriorTurning));
+        avgPropOrientPostTurningG2019S_FreeNav = mean(vertcat(varsFreeNav_G2019S(:).propOrientationAfterTurning));
+        subplot(4,3,5)
+        colourBins = repmat(coloursEA(2,:),4,1);
+        legendName=[];titleName={'Probability of larvae orientation pre-turning [Free Nav]'};
+        plotPolarhistogram(avgPropOrientPreTurningG2019S_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,8)
+        titleName={'Probability of larvae orientation pre-turning [Free Nav]','(normalized by time spent per orientation)'};
+        plotPolarhistogram((avgPropOrientPreTurningG2019S_FreeNav./avgOrientationPropG2019SFreeNav)/sum(avgPropOrientPreTurningG2019S_FreeNav./avgOrientationPropG2019SFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,11)
+        titleName={'Probability of larvae orientation after turning [Free Nav]'};
+        plotPolarhistogram(avgPropOrientPostTurningG2019S_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % subplot(4,6,23)
+        % titleName={'Probability of larvae orientation after turning','(normalized by time spent per orientation)'};
+        % plotPolarhistogram((avgPropOrientPostTurningG2019S_FreeNav./avgOrientationPropG2019SFreeNav)/sum(avgPropOrientPostTurningG2019S_FreeNav./avgOrientationPropG2019SFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % 
+
+        avgPropOrientPreTurningA53T_FreeNav = mean(vertcat(varsFreeNav_A53T(:).propOrientationPriorTurning));
+        avgPropOrientPostTurningA53T_FreeNav = mean(vertcat(varsFreeNav_A53T(:).propOrientationAfterTurning));
+        colourBins = repmat(coloursEA(3,:),4,1);
+        legendName=[];titleName=[];
+        subplot(4,3,6)
+        plotPolarhistogram(avgPropOrientPreTurningA53T_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        titleName=[];
+        subplot(4,3,9)
+        plotPolarhistogram((avgPropOrientPreTurningA53T_FreeNav./avgOrientationPropA53TFreeNav)/sum(avgPropOrientPreTurningA53T_FreeNav./avgOrientationPropA53TFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        subplot(4,3,12)
+        plotPolarhistogram(avgPropOrientPostTurningA53T_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % subplot(4,6,24)
+        % plotPolarhistogram((avgPropOrientPostTurningA53T_FreeNav./avgOrientationPropA53TFreeNav)/sum(avgPropOrientPostTurningA53T_FreeNav./avgOrientationPropA53TFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
+        % 
+
 
 
 
