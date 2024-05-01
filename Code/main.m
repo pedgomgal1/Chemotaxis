@@ -12,6 +12,9 @@ addpath(genpath('lib'))
 foldersGenotypes = dir(fullfile(pathFolder,'*@*'));
 experiments = {'n_1ul1000EA_600s@n','n_freeNavigation_600s@n'};
 
+% experiments = {'n_1ul1000EA_600s_72h@n','n_1ul1000EA_600s_96h@n'};
+
+
 path2search1=dir(fullfile(pathFolder,foldersGenotypes(1).name,'**',experiments{1},'202*'));
 path2search2=dir(fullfile(pathFolder,foldersGenotypes(2).name,'**',experiments{1},'202*'));
 path2search3=dir(fullfile(pathFolder,foldersGenotypes(3).name,'**',experiments{1},'202*'));%[dir(fullfile(pathFolder,foldersGenotypes(3).name,'**',experiments{1},'202305*'));dir(fullfile(pathFolder,foldersGenotypes(3).name,'**',experiments{1},'202306*'))];
@@ -26,6 +29,8 @@ celDirectories ={totalDirectories.folder};
 
 idsEA = find(cellfun(@(x) contains(x,'n_1ul1000EA_600s@n'), celDirectories));
 idsFreeNav = find(cellfun(@(x) contains(x,'n_freeNavigation_600s@n'), celDirectories));
+% idsEA = find(cellfun(@(x) contains(x,'n_1ul1000EA_600s_72h@n'), celDirectories));
+% idsFreeNav = find(cellfun(@(x) contains(x,'n_1ul1000EA_600s_96h@n'), celDirectories));
 idsTH = find(cellfun(@(x) contains(x,'Uempty'), celDirectories));
 idsG2019S = find(cellfun(@(x) contains(x,'UG2019S'), celDirectories));
 idsA53T = find(cellfun(@(x) contains(x,'UaSynA53T'), celDirectories));
@@ -34,7 +39,7 @@ idsA53T = find(cellfun(@(x) contains(x,'UaSynA53T'), celDirectories));
 allVars=cell(size(totalDirectories,1),1);
 tableSummaryFeatures=cell(size(totalDirectories,1),1);
 
-parfor nDir=1:size(totalDirectories,1)
+for nDir=1:size(totalDirectories,1)
 
     try
         allVars{nDir}=extractFeaturesPerExperiment(fullfile(totalDirectories(nDir).folder,totalDirectories(nDir).name));
@@ -72,27 +77,31 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
 
 %%%% PLOT NAVIGATION INDEX %%%%
 
-        minMax_Y_val = [-0.2, 0.5]; tickInterval=0.1;      
+        minMax_Y_val = [-0.4, 1]; tickInterval=0.1;      
         h1 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
+        xTickLabels = {'Chemotaxis','Free Navigation'};
+        % xTickLabels = {'72_h','96_h'};
         %nav index
         subplot(3,2,1:2)
         chemotaxisData = {vertcat(varsEA_Control(:).navigationIndex_roundT),vertcat(varsEA_G2019S(:).navigationIndex_roundT),vertcat(varsEA_A53T(:).navigationIndex_roundT)};
         freeNavData = {vertcat(varsFreeNav_Control(:).navigationIndex_roundT),vertcat(varsFreeNav_G2019S(:).navigationIndex_roundT),vertcat(varsFreeNav_A53T(:).navigationIndex_roundT)};
-        plotBoxChart(chemotaxisData,freeNavData,coloursEA,'',fontSizeFigure,fontNameFigure,'Navigation index');
+        stats_tab_NavIndex=plotBoxChart(chemotaxisData,freeNavData,coloursEA,'',fontSizeFigure,fontNameFigure,'Navigation index', minMax_Y_val,tickInterval,xTickLabels);
+
         ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
-        legend('','','','','','','',phenotypes_name{1},'',phenotypes_name{2},'',phenotypes_name{3}),legend('Location','northwestoutside'),legend('boxoff')
+        legend('','','','','','',phenotypes_name{1},phenotypes_name{2},phenotypes_name{3}),legend('Location','northwestoutside'),legend('boxoff')
+        
+        
         %abs. distance X axis
-        subplot(3,2,3); minMax_Y_val = [-0.3, 0.7]; 
+        subplot(3,2,3);
         chemotaxisDataX = {vertcat(varsEA_Control(:).distanceIndex_Xaxis_roundT),vertcat(varsEA_G2019S(:).distanceIndex_Xaxis_roundT),vertcat(varsEA_A53T(:).distanceIndex_Xaxis_roundT)};
         freeNavDataX = {vertcat(varsFreeNav_Control(:).distanceIndex_Xaxis_roundT),vertcat(varsFreeNav_G2019S(:).distanceIndex_Xaxis_roundT),vertcat(varsFreeNav_A53T(:).distanceIndex_Xaxis_roundT)};
-        plotBoxChart(chemotaxisDataX,freeNavDataX,coloursEA,'',fontSizeFigure,fontNameFigure,'Distance index X axis');
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        stats_tab_DistXIndex = plotBoxChart(chemotaxisDataX,freeNavDataX,coloursEA,'',fontSizeFigure,fontNameFigure,'Distance index X axis', minMax_Y_val,tickInterval,xTickLabels);
+
         %abs. distance Y axis
         subplot(3,2,4); 
         chemotaxisDataY = {vertcat(varsEA_Control(:).distanceIndex_Yaxis_roundT),vertcat(varsEA_G2019S(:).distanceIndex_Yaxis_roundT),vertcat(varsEA_A53T(:).distanceIndex_Yaxis_roundT)};
         freeNavDataY = {vertcat(varsFreeNav_Control(:).distanceIndex_Yaxis_roundT),vertcat(varsFreeNav_G2019S(:).distanceIndex_Yaxis_roundT),vertcat(varsFreeNav_A53T(:).distanceIndex_Yaxis_roundT)};
-        plotBoxChart(chemotaxisDataY,freeNavDataY,coloursEA,'',fontSizeFigure,fontNameFigure,'Distance index Y axis');
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        stats_tab_DistYIndex = plotBoxChart(chemotaxisDataY,freeNavDataY,coloursEA,'',fontSizeFigure,fontNameFigure,'Distance index Y axis', minMax_Y_val,tickInterval,xTickLabels);
 
 
     %%%% PLOT bins distribution init & end
@@ -158,10 +167,10 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         
         
         % Set labels and title
-        xlabel({'time','Chemotaxis'});
+        xlabel({'time',xTickLabels{1}});
         ylabel({'Proportion of larvae','(- odour) right side','(+ odour) left side'});
         
-        minMax_Y_val = [-0.4, 0.7];
+        minMax_Y_val = [-0.4, 0.8];
         titleFig =''; tickInterval = 0.2; hold on
         ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
         set(gca, 'XTick', [2,6,10,14], 'XTickLabel', {'10 s','200 s','400 s','590 s'});
@@ -170,10 +179,9 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         grid on;
         set(gca,'XGrid','off')
         set(gcf, 'Units', 'inches');
-        set(gcf, 'Position', [2, 2, 10, 6]); % Adjust width and height as needed
+        % set(gcf, 'Position', [2, 2, 10, 6]); % Adjust width and height as needed
         set(gca, 'FontName', fontNameFigure, 'FontSize', fontSizeFigure);
-        set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
-        set(findall(gcf,'-property','FontSize'),'FontSize',fontSizeFigure);
+   
 
         
         subplot(3,2,6)
@@ -195,10 +203,10 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         errorbar(num_indices, -right_proportionsFreeNav, right_errorsFreeNav, 'k', 'LineStyle', 'none');
         
         % Set labels and title
-        xlabel({'time','Free Navigation'});
+        xlabel({'time',xTickLabels{2}});
         set(gca,'FontSize', fontSizeFigure,'FontName',fontNameFigure);
         
-        minMax_Y_val = [-0.4, 0.7];
+        minMax_Y_val = [-0.4, 0.8];
         titleFig =''; tickInterval = 0.2; hold on
         ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
         set(gca, 'XTick', [2,6,10,14], 'XTickLabel', {'10 s','200 s','400 s','590 s'});
@@ -207,10 +215,10 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         hold off
       
         set(gcf, 'Units', 'inches');
-        set(gcf, 'Position', [2, 2, 10, 6]); % Adjust width and height as needed
+        % set(gcf, 'Position', [2, 2, 10, 6]); % Adjust width and height as needed
         set(gca, 'FontName', fontNameFigure, 'FontSize', fontSizeFigure);
-        set(findall(h1,'-property','FontName'),'FontName',fontNameFigure);
-        set(findall(h1,'-property','FontSize'),'FontSize',fontSizeFigure);
+        % set(findall(h1,'-property','FontName'),'FontName',fontNameFigure);
+        % set(findall(h1,'-property','FontSize'),'FontSize',fontSizeFigure);
 
 
 %%%% PLOT AVERAGE SPEED (NORMALIZED BY LENGTH) %%%%
@@ -218,41 +226,61 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         %subplot speed (normalized)/t       
         paintError='pooledStandardError';
 
-        subplot(3,5,11:12);
+        subplot(4,5,16:17);
         hold on
-        plotPropertyVersusT(T,cat(2,varsEA_Control(:).avgSpeedRoundTGolay),cat(2,varsEA_G2019S(:).avgSpeedRoundTGolay),cat(2,varsEA_A53T(:).avgSpeedRoundTGolay),...,
-            cat(2,varsEA_Control(:).semSpeedRoundTGolay),cat(2,varsEA_G2019S(:).semSpeedRoundTGolay),cat(2,varsEA_A53T(:).semSpeedRoundTGolay),LineStyleEA,coloursEA,paintError)
-        xlabel({'Time (s)','Chemotaxis'});ylabel('Speed (mm/s)');ylim([0 0.4]);
+        plotPropertyVersusT(T,cat(2,{varsEA_Control(:).avgSpeedRoundTGolay}),cat(2,{varsEA_G2019S(:).avgSpeedRoundTGolay}),cat(2,{varsEA_A53T(:).avgSpeedRoundTGolay}),...,
+            cat(2,{varsEA_Control(:).semSpeedRoundTGolay}),cat(2,{varsEA_G2019S(:).semSpeedRoundTGolay}),cat(2,{varsEA_A53T(:).semSpeedRoundTGolay}),LineStyleEA,coloursEA,paintError,fontSizeFigure,fontNameFigure)
+        xlabel({['Time (s) ' xTickLabels{1}]});ylabel('Speed (mm/s)');ylim([0 0.4]);
 
-        subplot(3,5,13:14);
-        plotPropertyVersusT(T,cat(2,varsFreeNav_Control(:).avgSpeedRoundTGolay),cat(2,varsFreeNav_G2019S(:).avgSpeedRoundTGolay),cat(2,varsFreeNav_A53T(:).avgSpeedRoundTGolay),...,
-            cat(2,varsFreeNav_Control(:).semSpeedRoundTGolay),cat(2,varsFreeNav_G2019S(:).semSpeedRoundTGolay),cat(2,varsFreeNav_A53T(:).semSpeedRoundTGolay),LineStyleEA,coloursEA,paintError)
-        xlabel({'Time (s)','Free navigation'});ylim([0 0.4]);
+        subplot(4,5,18:19);
+        plotPropertyVersusT(T,cat(2,{varsFreeNav_Control(:).avgSpeedRoundTGolay}),cat(2,{varsFreeNav_G2019S(:).avgSpeedRoundTGolay}),cat(2,{varsFreeNav_A53T(:).avgSpeedRoundTGolay}),...,
+            cat(2,{varsFreeNav_Control(:).semSpeedRoundTGolay}),cat(2,{varsFreeNav_G2019S(:).semSpeedRoundTGolay}),cat(2,{varsFreeNav_A53T(:).semSpeedRoundTGolay}),LineStyleEA,coloursEA,paintError,fontSizeFigure,fontNameFigure)
+        xlabel({['Time (s) ' xTickLabels{2}]});ylim([0 0.4]);
 
 
-        subplot(3,5,6:7);
+        subplot(4,5,11:12);
         hold on
-        plotPropertyVersusT(T,cat(2,varsEA_Control(:).avgSpeedRoundTGolayNormalized),cat(2,varsEA_G2019S(:).avgSpeedRoundTGolayNormalized),cat(2,varsEA_A53T(:).avgSpeedRoundTGolayNormalized),...,
-            cat(2,varsEA_Control(:).semSpeedRoundTGolayNormalized),cat(2,varsEA_G2019S(:).semSpeedRoundTGolayNormalized),cat(2,varsEA_A53T(:).semSpeedRoundTGolayNormalized),LineStyleEA,coloursEA,paintError)
-        xlabel({'Time (s)','Chemotaxis'});ylabel('Speed / length (1/s)');ylim([0 0.3]);
+        plotPropertyVersusT(T,cat(2,{varsEA_Control(:).avgSpeedRoundTGolayNormalized}),cat(2,{varsEA_G2019S(:).avgSpeedRoundTGolayNormalized}),cat(2,{varsEA_A53T(:).avgSpeedRoundTGolayNormalized}),...,
+            cat(2,{varsEA_Control(:).semSpeedRoundTGolayNormalized}),cat(2,{varsEA_G2019S(:).semSpeedRoundTGolayNormalized}),cat(2,{varsEA_A53T(:).semSpeedRoundTGolayNormalized}),LineStyleEA,coloursEA,paintError,fontSizeFigure,fontNameFigure)
+        xlabel({['Time (s) ' xTickLabels{1}]});ylabel('Speed / length (1/s)');ylim([0 0.3]);
 
-        subplot(3,5,8:9);
-        plotPropertyVersusT(T,cat(2,varsFreeNav_Control(:).avgSpeedRoundTGolayNormalized),cat(2,varsFreeNav_G2019S(:).avgSpeedRoundTGolayNormalized),cat(2,varsFreeNav_A53T(:).avgSpeedRoundTGolayNormalized),...,
-            cat(2,varsFreeNav_Control(:).semSpeedRoundTGolayNormalized),cat(2,varsFreeNav_G2019S(:).semSpeedRoundTGolayNormalized),cat(2,varsFreeNav_A53T(:).semSpeedRoundTGolayNormalized),LineStyleEA,coloursEA,paintError)
-        xlabel({'Time (s)','Free navigation'});ylim([0 0.3]);
+        subplot(4,5,13:14);
+        plotPropertyVersusT(T,cat(2,{varsFreeNav_Control(:).avgSpeedRoundTGolayNormalized}),cat(2,{varsFreeNav_G2019S(:).avgSpeedRoundTGolayNormalized}),cat(2,{varsFreeNav_A53T(:).avgSpeedRoundTGolayNormalized}),...,
+            cat(2,{varsFreeNav_Control(:).semSpeedRoundTGolayNormalized}),cat(2,{varsFreeNav_G2019S(:).semSpeedRoundTGolayNormalized}),cat(2,{varsFreeNav_A53T(:).semSpeedRoundTGolayNormalized}),LineStyleEA,coloursEA,paintError,fontSizeFigure,fontNameFigure)
+        xlabel({['Time (s) ' xTickLabels{2}]});ylim([0 0.3]);
 
 
         % subplot box chart average values
-        subplot(3,5,3:5);
-        avgSpeedPerExpChemotaxis = {vertcat(varsEA_Control(:).avgMeanSpeedGolayNormalized),vertcat(varsEA_G2019S(:).avgMeanSpeedGolayNormalized),vertcat(varsEA_A53T(:).avgMeanSpeedGolayNormalized)};
-        avgSpeedPerExpFreeNav = {vertcat(varsFreeNav_Control(:).avgMeanSpeedGolayNormalized),vertcat(varsFreeNav_G2019S(:).avgMeanSpeedGolayNormalized),vertcat(varsFreeNav_A53T(:).avgMeanSpeedGolayNormalized)};
-        minMax_Y_val = [0, 0.4];
+        subplot(4,5,1:2);
+        avgSpeedPerExpChemotaxis = {vertcat(varsEA_Control(:).avgMeanSpeedGolay),vertcat(varsEA_G2019S(:).avgMeanSpeedGolay),vertcat(varsEA_A53T(:).avgMeanSpeedGolay)};
+        avgSpeedPerExpFreeNav = {vertcat(varsFreeNav_Control(:).avgMeanSpeedGolay),vertcat(varsFreeNav_G2019S(:).avgMeanSpeedGolay),vertcat(varsFreeNav_A53T(:).avgMeanSpeedGolay)};
+        minMax_Y_val = [0, 0.5];
+        tickInterval = 0.05;
         titleFig ='';
         hold on
-        plotBoxChart(avgSpeedPerExpChemotaxis,avgSpeedPerExpFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Speed / length (1/s)');
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
-        legend('','','','','','','',phenotypes_name{1},'',phenotypes_name{2},'',phenotypes_name{3}),legend('Location','northeastoutside'),legend('boxoff')
-        subplot(3,5,1:2);
+        stats_tab_Speed=plotBoxChart(avgSpeedPerExpChemotaxis,avgSpeedPerExpFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Speed (mm/s)', minMax_Y_val,tickInterval,xTickLabels);
+
+        subplot(4,5,3:5);
+        avgLarvaeLengthPerExpChemotaxis = {vertcat(varsEA_Control(:).averageLarvaeLength),vertcat(varsEA_G2019S(:).averageLarvaeLength),vertcat(varsEA_A53T(:).averageLarvaeLength)};
+        avgLarvaeLengthPerExpFreeNav = {vertcat(varsFreeNav_Control(:).averageLarvaeLength),vertcat(varsFreeNav_G2019S(:).averageLarvaeLength),vertcat(varsFreeNav_A53T(:).averageLarvaeLength)};
+        minMax_Y_val = [1, 2.4];
+        tickInterval = 0.2;
+        titleFig ='';
+        hold on
+        stats_tab_LarvaeLength=plotBoxChart(avgLarvaeLengthPerExpChemotaxis,avgLarvaeLengthPerExpFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'larvae length (mm)', minMax_Y_val,tickInterval,xTickLabels);
+        legend('','','','','','',phenotypes_name{1},phenotypes_name{2},phenotypes_name{3}),legend('Location','northeastoutside'),legend('boxoff')
+        
+        
+        subplot(4,5,8:9);
+        avgSpeedNormPerExpChemotaxis = {vertcat(varsEA_Control(:).avgMeanSpeedGolayNormalized),vertcat(varsEA_G2019S(:).avgMeanSpeedGolayNormalized),vertcat(varsEA_A53T(:).avgMeanSpeedGolayNormalized)};
+        avgSpeedNormPerExpFreeNav = {vertcat(varsFreeNav_Control(:).avgMeanSpeedGolayNormalized),vertcat(varsFreeNav_G2019S(:).avgMeanSpeedGolayNormalized),vertcat(varsFreeNav_A53T(:).avgMeanSpeedGolayNormalized)};
+        minMax_Y_val = [0, 0.4];
+        tickInterval = 0.05;
+        titleFig ='';
+        hold on
+        stats_tab_SpeedNorm=plotBoxChart(avgSpeedNormPerExpChemotaxis,avgSpeedNormPerExpFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Speed / length (1/s)', minMax_Y_val,tickInterval,xTickLabels);
+        subplot(4,5,6:7);
+
         % Plot scatter plot with inverted axes
         experiment1_length= [vertcat(varsEA_Control(:).averageLarvaeLength);vertcat(varsFreeNav_Control(:).averageLarvaeLength)];
         experiment2_length= [vertcat(varsEA_G2019S(:).averageLarvaeLength);vertcat(varsFreeNav_G2019S(:).averageLarvaeLength)];
@@ -273,8 +301,8 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
 
         hold off;
 
-        set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
-        set(findall(gcf,'-property','FontSize'),'FontSize',fontSizeFigure);
+        % set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
+        % set(findall(gcf,'-property','FontSize'),'FontSize',fontSizeFigure);
 
 %% PLOT ANGULAR SPEED  and TORTUOSITY %%%%
         h3 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
@@ -283,33 +311,30 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         subplot(3,2,1:2);
         avgAngSpeedPerExpChemotaxis = {vertcat(varsEA_Control(:).avgMeanAngularSpeed),vertcat(varsEA_G2019S(:).avgMeanAngularSpeed),vertcat(varsEA_A53T(:).avgMeanAngularSpeed)};
         avgAngSpeedPerExpFreeNav = {vertcat(varsFreeNav_Control(:).avgMeanAngularSpeed),vertcat(varsFreeNav_G2019S(:).avgMeanAngularSpeed),vertcat(varsFreeNav_A53T(:).avgMeanAngularSpeed)};
-        minMax_Y_val = [0, 5];
-        titleFig =''; tickInterval = 1; hold on
-        plotBoxChart(avgAngSpeedPerExpChemotaxis,avgAngSpeedPerExpFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Angular speed (degrees/s)');
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
-        legend('','','','','','','',phenotypes_name{1},'',phenotypes_name{2},'',phenotypes_name{3}),legend('Location','northwestoutside'),legend('boxoff')
+        minMax_Y_val = [0, 6];
+        titleFig =''; tickInterval = 0.5; hold on
+        stats_tab_AngSpeed=plotBoxChart(avgAngSpeedPerExpChemotaxis,avgAngSpeedPerExpFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Angular speed (degrees/s)', minMax_Y_val,tickInterval,xTickLabels);
+        legend('','','','','','',phenotypes_name{1},phenotypes_name{2},phenotypes_name{3}),legend('Location','northeastoutside'),legend('boxoff')
 
 
         subplot(3,2,3);hold on
-        plotPropertyVersusT(T,cat(2,varsEA_Control(:).meanAngularSpeedPerT),cat(2,varsEA_G2019S(:).meanAngularSpeedPerT),cat(2,varsEA_A53T(:).meanAngularSpeedPerT),...,
-            cat(2,varsEA_Control(:).semAngularSpeedPerT),cat(2,varsEA_G2019S(:).semAngularSpeedPerT),cat(2,varsEA_A53T(:).semAngularSpeedPerT),LineStyleEA,coloursEA,paintError)
-        xlabel({'Time (s)','Chemotaxis'});ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))       
+        plotPropertyVersusT(T,cat(2,{varsEA_Control(:).meanAngularSpeedPerT}),cat(2,{varsEA_G2019S(:).meanAngularSpeedPerT}),cat(2,{varsEA_A53T(:).meanAngularSpeedPerT}),...,
+            cat(2,{varsEA_Control(:).semAngularSpeedPerT}),cat(2,{varsEA_G2019S(:).semAngularSpeedPerT}),cat(2,{varsEA_A53T(:).semAngularSpeedPerT}),LineStyleEA,coloursEA,paintError,fontSizeFigure,fontNameFigure)
+        xlabel({['Time (s) ' xTickLabels{1}]});ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))       
 
         subplot(3,2,4)
-        plotPropertyVersusT(T,cat(2,varsFreeNav_Control(:).meanAngularSpeedPerT),cat(2,varsFreeNav_G2019S(:).meanAngularSpeedPerT),cat(2,varsFreeNav_A53T(:).meanAngularSpeedPerT),...,
-            cat(2,varsFreeNav_Control(:).semAngularSpeedPerT),cat(2,varsFreeNav_G2019S(:).semAngularSpeedPerT),cat(2,varsFreeNav_A53T(:).semAngularSpeedPerT),LineStyleEA,coloursEA,paintError)
-        xlabel({'Time (s)','Free navigation'});ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        plotPropertyVersusT(T,cat(2,{varsFreeNav_Control(:).meanAngularSpeedPerT}),cat(2,{varsFreeNav_G2019S(:).meanAngularSpeedPerT}),cat(2,{varsFreeNav_A53T(:).meanAngularSpeedPerT}),...,
+            cat(2,{varsFreeNav_Control(:).semAngularSpeedPerT}),cat(2,{varsFreeNav_G2019S(:).semAngularSpeedPerT}),cat(2,{varsFreeNav_A53T(:).semAngularSpeedPerT}),LineStyleEA,coloursEA,paintError,fontSizeFigure,fontNameFigure)
+        xlabel({['Time (s) ' xTickLabels{2}]});ylabel('Angular speed (degress/s)');ylim(minMax_Y_val);yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
         %%%% Tortuosity (Loveless 2018, Integrative & Comparative Biology)
         subplot(3,2,5)
 
         avgTortuosityChemotaxis = {vertcat(varsEA_Control(:).meanTortuosity),vertcat(varsEA_G2019S(:).meanTortuosity),vertcat(varsEA_A53T(:).meanTortuosity)};
         avgTortuosityFreeNav = {vertcat(varsFreeNav_Control(:).meanTortuosity),vertcat(varsFreeNav_G2019S(:).meanTortuosity),vertcat(varsFreeNav_A53T(:).meanTortuosity)};
-        minMax_Y_val = [0, 1];
-        titleFig =''; tickInterval = 0.2; hold on
-        plotBoxChart(avgTortuosityChemotaxis,avgTortuosityFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Tortuosity');
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        minMax_Y_val = [0, 0.9];
+        titleFig =''; tickInterval = 0.1; hold on
+        stats_tab_tortuosity=plotBoxChart(avgTortuosityChemotaxis,avgTortuosityFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,'Tortuosity', minMax_Y_val,tickInterval,xTickLabels);
 
-        
 %% TURNING/DECISION MAKING ANALYSIS ANALYSIS PLOTS
         h4 = figure('units','normalized','outerposition',[0 0 1 1],'Visible','on');
         
@@ -320,48 +345,45 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         avgTurningRateFreeNav = {vertcat(varsFreeNav_Control(:).turningRatePerMinute),vertcat(varsFreeNav_G2019S(:).turningRatePerMinute),vertcat(varsFreeNav_A53T(:).turningRatePerMinute)};
         minMax_Y_val = [0, 3];
         titleFig =''; tickInterval = 0.25; hold on
-        plotBoxChart(avgTurningRateChemotaxis,avgTurningRateFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Turning rate','(# turns > 45 dg) / min'});
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
-        legend('','','','','','','',phenotypes_name{1},'',phenotypes_name{2},'',phenotypes_name{3}),legend('Location','northwestoutside'),legend('boxoff')
-        
+        stats_tab_turningRate=plotBoxChart(avgTurningRateChemotaxis,avgTurningRateFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Turning rate','(# turns > 45 dg) / min'}, minMax_Y_val,tickInterval,xTickLabels);
+        legend('','','','','','',phenotypes_name{1},phenotypes_name{2},phenotypes_name{3}),legend('Location','northeastoutside'),legend('boxoff')
+ 
+
         %Agility index (mean speed running / mean speed turning
         subplot(3,2,3);
         avgAgilityIndexChemotaxis = {arrayfun(@(x) varsEA_Control(x).larvaeAgilityNormalized.meanSpeed_Turning / varsEA_Control(x).larvaeAgilityNormalized.meanSpeed_Run,1:size(varsEA_Control,1)),arrayfun(@(x) varsEA_G2019S(x).larvaeAgilityNormalized.meanSpeed_Turning / varsEA_G2019S(x).larvaeAgilityNormalized.meanSpeed_Run,1:size(varsEA_G2019S,1)),arrayfun(@(x) varsEA_A53T(x).larvaeAgilityNormalized.meanSpeed_Turning / varsEA_A53T(x).larvaeAgilityNormalized.meanSpeed_Run,1:size(varsEA_A53T,1))};
         avgAgilityIndexFreeNav = {arrayfun(@(x) varsFreeNav_Control(x).larvaeAgilityNormalized.meanSpeed_Turning / varsFreeNav_Control(x).larvaeAgilityNormalized.meanSpeed_Run,1:size(varsFreeNav_Control,1)),arrayfun(@(x) varsFreeNav_G2019S(x).larvaeAgilityNormalized.meanSpeed_Turning / varsFreeNav_G2019S(x).larvaeAgilityNormalized.meanSpeed_Run,1:size(varsFreeNav_G2019S,1)),arrayfun(@(x) varsFreeNav_A53T(x).larvaeAgilityNormalized.meanSpeed_Turning / varsFreeNav_A53T(x).larvaeAgilityNormalized.meanSpeed_Run,1:size(varsFreeNav_A53T,1))};
         minMax_Y_val = [0, 0.8];
-        titleFig =''; tickInterval = 0.2; hold on
-        plotBoxChart(avgAgilityIndexChemotaxis,avgAgilityIndexFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Agility index','<speed turning>/<speed running>'});
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        titleFig =''; tickInterval = 0.1; hold on
+        stats_tab_agilityIndex=plotBoxChart(avgAgilityIndexChemotaxis,avgAgilityIndexFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Agility index','<speed turning>/<speed running>'}, minMax_Y_val,tickInterval,xTickLabels);
 
         %Accumulated angle change during turning events
         subplot(3,2,4);
         avgAccumAngleDuringTurningChemotaxis = {arrayfun(@(x) varsEA_Control(x).averageAccumAnglePerTurn.mean_accumAngle,1:size(varsEA_Control,1)),arrayfun(@(x) varsEA_G2019S(x).averageAccumAnglePerTurn.mean_accumAngle,1:size(varsEA_G2019S,1)),arrayfun(@(x) varsEA_A53T(x).averageAccumAnglePerTurn.mean_accumAngle,1:size(varsEA_A53T,1))};
         avgAccumAngleDuringTurningFreeNav = {arrayfun(@(x) varsFreeNav_Control(x).averageAccumAnglePerTurn.mean_accumAngle,1:size(varsFreeNav_Control,1)),arrayfun(@(x) varsFreeNav_G2019S(x).averageAccumAnglePerTurn.mean_accumAngle,1:size(varsFreeNav_G2019S,1)),arrayfun(@(x) varsFreeNav_A53T(x).averageAccumAnglePerTurn.mean_accumAngle,1:size(varsFreeNav_A53T,1))};
 
-        minMax_Y_val = [0, 300];
-        titleFig =''; tickInterval = 30; hold on
-        plotBoxChart(avgAccumAngleDuringTurningChemotaxis,avgAccumAngleDuringTurningFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Angular exploration', 'in turning event (degrees)'});
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        minMax_Y_val = [0, 690];
+        titleFig =''; tickInterval = 50; hold on
+        stats_tab_accumTurnAngle=plotBoxChart(avgAccumAngleDuringTurningChemotaxis,avgAccumAngleDuringTurningFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Angular exploration', 'in turning event (degrees)'}, minMax_Y_val,tickInterval,xTickLabels);
 
         %Duration of turning event angle during turning
         subplot(3,2,5);
         avgDurationTurningChemotaxis = {arrayfun(@(x) varsEA_Control(x).averageAccumAnglePerTurn.mean_durationTurn,1:size(varsEA_Control,1)),arrayfun(@(x) varsEA_G2019S(x).averageAccumAnglePerTurn.mean_durationTurn,1:size(varsEA_G2019S,1)),arrayfun(@(x) varsEA_A53T(x).averageAccumAnglePerTurn.mean_durationTurn,1:size(varsEA_A53T,1))};
         avgDurationTurningFreeNav = {arrayfun(@(x) varsFreeNav_Control(x).averageAccumAnglePerTurn.mean_durationTurn,1:size(varsFreeNav_Control,1)),arrayfun(@(x) varsFreeNav_G2019S(x).averageAccumAnglePerTurn.mean_durationTurn,1:size(varsFreeNav_G2019S,1)),arrayfun(@(x) varsFreeNav_A53T(x).averageAccumAnglePerTurn.mean_durationTurn,1:size(varsFreeNav_A53T,1))};
 
-        minMax_Y_val = [0, 10];
-        titleFig =''; tickInterval = 2; hold on
-        plotBoxChart(avgDurationTurningChemotaxis,avgDurationTurningFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Duration turning events (s)'});
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        minMax_Y_val = [0, 22];
+        titleFig =''; tickInterval = 1.5; hold on
+        stats_tab_turningDuration=plotBoxChart(avgDurationTurningChemotaxis,avgDurationTurningFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Duration turning events (s)'}, minMax_Y_val,tickInterval,xTickLabels);
+
 
         %Number of stops per larva per minute 
         subplot(3,2,6);
         
         avgStopRateChemotaxis = {vertcat(varsEA_Control(:).stoppingRatePerMinute),vertcat(varsEA_G2019S(:).stoppingRatePerMinute),vertcat(varsEA_A53T(:).stoppingRatePerMinute)};
         avgStopRateFreeNav = {vertcat(varsFreeNav_Control(:).stoppingRatePerMinute),vertcat(varsFreeNav_G2019S(:).stoppingRatePerMinute),vertcat(varsFreeNav_A53T(:).stoppingRatePerMinute)};
-        minMax_Y_val = [-0.1, 0.5];
-        titleFig =''; tickInterval = 0.1; hold on
-        plotBoxChart(avgStopRateChemotaxis,avgStopRateFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Stopping rate','(# stops / min'});
-        ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+        minMax_Y_val = [0, 2];
+        titleFig =''; tickInterval = 0.25 ; hold on
+        stats_tab_stopRate=plotBoxChart(avgStopRateChemotaxis,avgStopRateFreeNav,coloursEA,titleFig,fontSizeFigure,fontNameFigure,{'Stopping rate','(# stops / min'}, minMax_Y_val,tickInterval,xTickLabels);
         
 
 %% Polar histogram orientations;
@@ -391,7 +413,7 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         avgOrientationPropG2019SEA= mean(vertcat(varsEA_G2019S(:).runRatePerOrient)+vertcat(varsEA_G2019S(:).turningRatePerOrient)+vertcat(varsEA_G2019S(:).stopRatePerOrient));
         stdOrientationPropG2019SEA= std(vertcat(varsEA_G2019S(:).runRatePerOrient)+vertcat(varsEA_G2019S(:).turningRatePerOrient)+vertcat(varsEA_G2019S(:).stopRatePerOrient));
         colourBins = repmat(coloursEA(2,:),4,1);
-        legendName=[];titleName={'Probability of larvae orientation [Chemotaxis]','',phenotypes_name{2}};
+        legendName=[];titleName={['Probability of larvae orientation [' xTickLabels{1} ']'],'',phenotypes_name{2}};
         plotPolarhistogram(avgOrientationPropG2019SEA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
                 
         subplot(4,3,3)
@@ -426,13 +448,13 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         avgPropOrientPostTurningG2019S_EA = mean(vertcat(varsEA_G2019S(:).propOrientationAfterTurning));
         subplot(4,3,5)
         colourBins = repmat(coloursEA(2,:),4,1);
-        legendName=[];titleName={'Probability of larvae orientation pre-turning [Chemotaxis]'};
+        legendName=[];titleName={['Probability of larvae orientation pre-turning [' xTickLabels{1} ']']};
         plotPolarhistogram(avgPropOrientPreTurningG2019S_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
         subplot(4,3,8)
-        titleName={'Probability of larvae orientation pre-turning [Chemotaxis]','(normalized by time spent per orientation)'};
+        titleName={['Probability of larvae orientation pre-turning [' xTickLabels{1} ']'],'(normalized by time spent per orientation)'};
         plotPolarhistogram((avgPropOrientPreTurningG2019S_EA./avgOrientationPropG2019SEA)/sum(avgPropOrientPreTurningG2019S_EA./avgOrientationPropG2019SEA),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
         subplot(4,3,11)
-        titleName={'Probability of larvae orientation after turning [Chemotaxis]'};
+        titleName={['Probability of larvae orientation after turning [' xTickLabels{1} ']']};
         plotPolarhistogram(avgPropOrientPostTurningG2019S_EA,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
         % subplot(4,6,20)
         % titleName={'Probability of larvae orientation after turning','(normalized by time spent per orientation)'};
@@ -466,7 +488,7 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         avgOrientationPropG2019SFreeNav= mean(vertcat(varsFreeNav_G2019S(:).runRatePerOrient)+vertcat(varsFreeNav_G2019S(:).turningRatePerOrient)+vertcat(varsFreeNav_G2019S(:).stopRatePerOrient));
         stdOrientationPropG2019SFreeNav= std(vertcat(varsFreeNav_G2019S(:).runRatePerOrient)+vertcat(varsFreeNav_G2019S(:).turningRatePerOrient)+vertcat(varsFreeNav_G2019S(:).stopRatePerOrient));
         colourBins = repmat(coloursEA(2,:),4,1);
-        legendName=[];titleName={'Probability of larvae orientation [Free Nav]','',phenotypes_name{2}};
+        legendName=[];titleName={['Probability of larvae orientation [' xTickLabels{2} ']'],'',phenotypes_name{2}};
         plotPolarhistogram(avgOrientationPropG2019SFreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
                 
         subplot(4,3,3)
@@ -495,13 +517,13 @@ varsFreeNav_G2019S = vertcat(allVars{intersect(idsFreeNav,idsG2019S)});
         avgPropOrientPostTurningG2019S_FreeNav = mean(vertcat(varsFreeNav_G2019S(:).propOrientationAfterTurning));
         subplot(4,3,5)
         colourBins = repmat(coloursEA(2,:),4,1);
-        legendName=[];titleName={'Probability of larvae orientation pre-turning [Free Nav]'};
+        legendName=[];titleName={['Probability of larvae orientation pre-turning [' xTickLabels{2} ']']};
         plotPolarhistogram(avgPropOrientPreTurningG2019S_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
         subplot(4,3,8)
-        titleName={'Probability of larvae orientation pre-turning [Free Nav]','(normalized by time spent per orientation)'};
+        titleName={['Probability of larvae orientation pre-turning [' xTickLabels{2} ']'],'(normalized by time spent per orientation)'};
         plotPolarhistogram((avgPropOrientPreTurningG2019S_FreeNav./avgOrientationPropG2019SFreeNav)/sum(avgPropOrientPreTurningG2019S_FreeNav./avgOrientationPropG2019SFreeNav),num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
         subplot(4,3,11)
-        titleName={'Probability of larvae orientation after turning [Free Nav]'};
+        titleName={['Probability of larvae orientation after turning [' xTickLabels{2} ']']};
         plotPolarhistogram(avgPropOrientPostTurningG2019S_FreeNav,num_bins,angle_ranges,colourBins,titleName,legendName,radiusLimits,arrayRTicks,rTicksLabels,ticksAngles,angleTicksLabels,fontNameFigure,fontSizeFigure)
         % subplot(4,6,23)
         % titleName={'Probability of larvae orientation after turning','(normalized by time spent per orientation)'};
@@ -535,58 +557,45 @@ if ~exist(folder2save,'dir'), mkdir(fullfile(folder2save,'Figures')); end
 
 
 %% ORGANIZE DATA IN TABLES
-
-[tabNavIndex,tabSpeedNormLength,tabSpeed,tabAngSpeed,tabPercAngStates,tabMeanTransitionMatrixOrient,tabStdTransitionMatrixOrient,...
-    tabOrientationLarvPriorAfterCasting,tabOrientationPriorAfterCastingOrTurning,tabSpeedOrientation,tabAngularSpeedOrientation] ...
-    = organizeDataInTables(allVars,varsEA_Control,varsEA_A53T,varsEA_G2019S,varsFreeNav_Control,varsFreeNav_A53T,varsFreeNav_G2019S);
-
+[tabNavIndex,tabSpeedNormLength,tabSpeed,tabLarvaeLength,tabAngSpeed,tabPercAngStates,tabMeanTransitionMatrixOrient,tabPercMovStates,tabMeanTransitionMatrixMov,...
+    tabOrientationPriorAfterTurning]  = organizeDataInTables(allVars,idsEA,idsFreeNav,idsTH,idsG2019S,idsA53T,varsEA_Control,varsEA_A53T,varsEA_G2019S,varsFreeNav_Control,varsFreeNav_A53T,varsFreeNav_G2019S);
 
 if isPrintOn == 1
-    print(h1,fullfile(folder2save,'Figures','area_vs_T.png'),'-dpng','-r300')
-    savefig(h1,fullfile(folder2save,'Figures','area_vs_T.fig'))
-    print(h2,fullfile(folder2save,'Figures','speed_vs_T.png'),'-dpng','-r300')
-    savefig(h2,fullfile(folder2save,'Figures','speed_vs_T.fig'))
-    print(h5,fullfile(folder2save,'Figures','angularSpeed_vs_T.png'),'-dpng','-r300')
-    savefig(h5,fullfile(folder2save,'Figures','angularSpeed_vs_T.fig'))
-    print(h6_1,fullfile(folder2save,'Figures','speed_normLength_vs_T.png'),'-dpng','-r300')
-    savefig(h6_1,fullfile(folder2save,'Figures','speed_normLength_vs_T.fig'))
-    print(h7,fullfile(folder2save,'Figures','curve_vs_T.png'),'-dpng','-r300')
-    savefig(h7,fullfile(folder2save,'Figures','curve_vs_T.fig'))
+    print(h1,fullfile(folder2save,'Figures','NavigationIndex.png'),'-dpng','-r300')
+    savefig(h1,fullfile(folder2save,'Figures','NavigationIndex.fig'))
+    print(h2,fullfile(folder2save,'Figures','Speed.png'),'-dpng','-r300')
+    savefig(h2,fullfile(folder2save,'Figures','Speed.fig'))
+    print(h3,fullfile(folder2save,'Figures','AngularSpeed_Tortuosity.png'),'-dpng','-r300')
+    savefig(h3,fullfile(folder2save,'Figures','AngularSpeed_Tortuosity.fig'))
+    print(h4,fullfile(folder2save,'Figures','TurningRate_agilityIndex.png'),'-dpng','-r300')
+    savefig(h4,fullfile(folder2save,'Figures','TurningRate_agilityIndex.fig'))
+    print(h5,fullfile(folder2save,'Figures','LarvaeOrientation_Chemotaxis.png'),'-dpng','-r300')
+    savefig(h5,fullfile(folder2save,'Figures','LarvaeOrientation_Chemotaxis.fig'))
+    print(h6,fullfile(folder2save,'Figures','LarvaeOrientation_FreeNav.png'),'-dpng','-r300')
+    savefig(h6,fullfile(folder2save,'Figures','LarvaeOrientation_FreeNav.fig'))
 
-%     print(h8,fullfile(folder2save,'Figures','proportionOfLarvaeRunning.png'),'-dpng','-r300')
-%     savefig(h8,fullfile(folder2save,'Figures','proportionOfLarvaeRunning.fig'))
-%     print(h9,fullfile(folder2save,'Figures','proportionOfLarvaeStopping.png'),'-dpng','-r300')
-%     savefig(h9,fullfile(folder2save,'Figures','proportionOfLarvaeStopping.fig')) 
-%     print(h10,fullfile(folder2save,'Figures','proportionOfLarvaeTurning.png'),'-dpng','-r300')
-%     savefig(h10,fullfile(folder2save,'Figures','proportionOfLarvaeTurning.fig')) 
-%     print(h11,fullfile(folder2save,'Figures','proportionOfLarvaeCasting.png'),'-dpng','-r300')
-%     savefig(h11,fullfile(folder2save,'Figures','proportionOfLarvaeCasting.fig')) 
-%     print(h12,fullfile(folder2save,'Figures','proportionOfLarvaeTurningOrCasting.png'),'-dpng','-r300')
-%     savefig(h12,fullfile(folder2save,'Figures','proportionOfLarvaeTurningOrCasting.fig'))
-
-    print(h13,fullfile(folder2save,'Figures','distributionXaxis.png'),'-dpng','-r300')
-    savefig(h13,fullfile(folder2save,'Figures','distributionXaxis.fig'))
-
-
-    clearvars -except folder2save tabSpeedNormLength tabOrientationLarvPriorAfterCasting tabOrientationPriorAfterCastingOrTurning tabCurveOrientation tabSpeedOrientation tabAngularSpeedOrientation tabNavIndex tabMeanTransitionMatrixOrient tabMeanTransitionMatrixMov tabArea tabCurve tabSpeed tabAngSpeed tabPercAngStates tabPercMovStates tabMovRatePerOrient
 
     writetable(tabNavIndex,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','NavIndex','Range','B2','WriteRowNames',true)
-    writetable(tabArea,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AreaLarvae','Range','B2','WriteRowNames',true)    
     writetable(tabSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed','Range','B2','WriteRowNames',true)
-    writetable(tabSpeedNormLength,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','SpeedNormLength','Range','B2','WriteRowNames',true)
+    writetable(tabSpeedNormLength,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Speed_Normalized','Range','B2','WriteRowNames',true)
+    writetable(tabLarvaeLength,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','LarvaeLength','Range','B2','WriteRowNames',true)
     writetable(tabAngSpeed,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AngSpeed','Range','B2','WriteRowNames',true)
-    writetable(tabCurve,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','Curve','Range','B2','WriteRowNames',true)
-    writetable(tabMeanTransitionMatrixOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixOrientation','Range','B2','WriteRowNames',true)
-%     writetable(tabMeanTransitionMatrixMov,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixMovStates','Range','B2','WriteRowNames',true)
     writetable(tabPercAngStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercAngStates','Range','B2','WriteRowNames',true)
-%     writetable(tabPercMovStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercMovStates','Range','B2','WriteRowNames',true)
-%     writetable(tabMovRatePerOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','RateMovStates','Range','B2','WriteRowNames',true)
-    writetable(tabSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','SpeedPerOrientation','Range','B2','WriteRowNames',true)
-    writetable(tabAngularSpeedOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','AngSpeedPerOrientation','Range','B2','WriteRowNames',true)
-    writetable(tabCurveOrientation,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','CurvePerOrientation','Range','B2','WriteRowNames',true)
-%     writetable(tabOrientationLarvPriorAfterCasting,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','OrientBefAftCast','Range','B2','WriteRowNames',true)
-%     writetable(tabOrientationPriorAfterCastingOrTurning,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','OrientBefAftCastTurn','Range','B2','WriteRowNames',true)
+    writetable(tabPercMovStates,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','PercMovStates','Range','B2','WriteRowNames',true)
+    writetable(tabMeanTransitionMatrixOrient,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','TransitionMatrixOrientation','Range','B2','WriteRowNames',true)
+    writetable(tabOrientationPriorAfterTurning,fullfile(folder2save,'dataNavigation.xlsx'),'Sheet','OrientBefAfTurning','Range','B2','WriteRowNames',true)
 
+    writetable(stats_tab_NavIndex,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_DistXIndex','Range','I2','WriteRowNames',true)
+    writetable(stats_tab_DistXIndex,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_DistXIndex','Range','I2','WriteRowNames',true)
+    writetable(stats_tab_DistYIndex,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_DistYIndex','Range','I2','WriteRowNames',true)
+    writetable(stats_tab_SpeedNorm,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_speed','Range','B2','WriteRowNames',true)
+    writetable(stats_tab_AngSpeed,fullfile(folder2save,'stats.xlsx'),'Sheet','AngSpeed','Range','I2','WriteRowNames',true)
+    writetable(stats_tab_tortuosity,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_tortuosity','Range','B2','WriteRowNames',true)
+    writetable(stats_tab_agilityIndex,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_agilityIndex','Range','B2','WriteRowNames',true)
+    writetable(stats_tab_turningRate,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_turningRate','Range','B2','WriteRowNames',true)
+    writetable(stats_tab_accumTurnAngle,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_accumTurningAngle','Range','B2','WriteRowNames',true)
+    writetable(stats_tab_turningDuration,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_turningDuration','Range','B2','WriteRowNames',true)
+    writetable(stats_tab_stopRate,fullfile(folder2save,'stats.xlsx'),'Sheet','Stat_stopRate','Range','B2','WriteRowNames',true)
 end
 
 close all

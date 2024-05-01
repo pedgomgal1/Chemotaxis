@@ -10,19 +10,19 @@ function allVars = extractFeaturesPerExperiment(varargin)
         dirPath=varargin{1};
     end
 
-    % if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
+    if ~exist(fullfile(dirPath,'navigationResults.mat'),'file')
     
         %% THRESHOLDS
         globalConstants.RigName='BO1';
-        globalConstants.golayFilterStepsWindow = 11; %number of time steps window to apply goloy filter
+        globalConstants.golayFilterStepsWindow = 11; % (11 in L2) number of time steps window to apply goloy filter
         globalConstants.accumAngleThreshold = 45; %accumulative angle to capture a turning event
         globalConstants.timeTurningThreshold = 6; %time to accum a differential angle enough to be classified as a turning event.
-        globalConstants.distanceThresholdForTurning = 0.125; %maximum distance between two consecutive center of mass to be included into a turning event. If distance is larger, those timepoints are considered as run 
+        globalConstants.distanceThresholdForTurning = 0.125; % (0.125 in L2)-(1 in 72h)maximum distance between two consecutive center of mass to be included into a turning event. If distance is larger, those timepoints are considered as run 
         %frame coordinates limit. New larvae IDs arising from outside of those limits will be discarded.
         globalConstants.xBorders = [35,190];
         globalConstants.yBorders = [10,160];
-        globalConstants.thresholdAngle = 30; %n degrees to consider a turning event
-        globalConstants.thresholdDistance = 0.015; % minimum distance to do not consider a larva stopped.
+        % globalConstants.thresholdAngle = 30; %n degrees to consider a turning event
+        globalConstants.thresholdDistance = 0.015; % (0.015 in L2)-(0.25 in 72h) minimum distance to do not consider a larva stopped.
         globalConstants.thresholdTime = 30; %minimum time a larva has to be tracked to do not discard it.
         globalConstants.angLarvaeThreshold = [45,135,225,315]; % left (odour) [225, 315] ; right [45, 135]; top [135,225] ; bottom [315,45]
     
@@ -227,8 +227,8 @@ function allVars = extractFeaturesPerExperiment(varargin)
         %Consider larvae that remains at least 60 seconds
         save(fullfile(dirPath,'navigationResults.mat'),'allVars','tableSummaryFeatures','globalConstants')
 
-    % else
-    %     load(fullfile(dirPath,'navigationResults.mat'),'allVars');
-    % end
+    else
+        load(fullfile(dirPath,'navigationResults.mat'),'allVars');
+    end
 
 end

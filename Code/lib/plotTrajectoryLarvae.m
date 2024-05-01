@@ -44,7 +44,14 @@ function plotTrajectoryLarvae(dataOutline,xFile,yFile,larvaeIDs,folder2save,imgI
 
                xCoordsPrev = xCoordsLarva(xCoordsLarva(:,1)<sec & (xCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
                yCoordsPrev = yCoordsLarva(yCoordsLarva(:,1)<sec & (yCoordsLarva(:,1) > (sec - maxLengthLarvaeTrajectory)),2);
+               
+
+
+               % figure;
                plot(yCoordsPrev*10,xCoordsPrev*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',1)
+               % xCoordsGolay = sgolayfilt(xCoordsPrev,1, 501);
+               % yCoordsGolay = sgolayfilt(yCoordsPrev,1, 501);
+               % figure;                plot(yCoordsGolay*10,xCoordsGolay*10,'Color',cmapRand(nLarva,:),'MarkerEdgeColor',cmapRand(nLarva,:),'LineWidth',1)
 
             else
                 if any(round(selectedRowsOutlineLabelTime(:,2))<sec) 

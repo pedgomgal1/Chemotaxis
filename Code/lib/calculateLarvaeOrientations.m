@@ -82,44 +82,48 @@ function [avgXFilePerRoundTFile, avgYFilePerRoundTFile,propLarvInAnglGroup,order
     % 
     % end
 
-    uniqRoundTime = unique(round(larvaeAngleXY(:,2)));
-    
-    propLarvInAnglGroup=zeros(length(uniqRoundTime),4);
-    allLarvaeOrientationXYPerSec = [];
-    for nSec=1:length(uniqRoundTime)
-        idT=ismember(round(larvaeAngleXY(:,2)),uniqRoundTime(nSec));
-        uniqLabelsSec = unique(larvaeAngleXY(idT,1));
+    if ~isempty(angThreshold)
+        uniqRoundTime = unique(round(larvaeAngleXY(:,2)));
         
-        %classify the angles in 4 groups as explained in the header (<- ; -> ; ^ ; v )
-        auxLarvInGroups=zeros(length(uniqLabelsSec),4);
-    
-        for nLar = 1:length(uniqLabelsSec)
-            idLar = ismember(larvaeAngleXY(:,1),uniqLabelsSec(nLar));
-            group2 = larvaeAngleXY(idLar & idT,3)>=angThreshold(1) & larvaeAngleXY(idLar & idT,3) < angThreshold(2);  %right
-            group3 = larvaeAngleXY(idLar & idT,3)>=angThreshold(2) & larvaeAngleXY(idLar & idT,3) < angThreshold(3);  %top
-            group1 = larvaeAngleXY(idLar & idT,3)>=angThreshold(3) & larvaeAngleXY(idLar & idT,3) < angThreshold(4);  %left
-            group4 = larvaeAngleXY(idLar & idT,3)>=angThreshold(4) | larvaeAngleXY(idLar & idT,3) < angThreshold(1);  %bottom
-            [~,idGroup]=max([group1,group2,group3,group4]);
-            auxLarvInGroups(nLar,idGroup)=1;
+        propLarvInAnglGroup=zeros(length(uniqRoundTime),4);
+        allLarvaeOrientationXYPerSec = [];
+        for nSec=1:length(uniqRoundTime)
+            idT=ismember(round(larvaeAngleXY(:,2)),uniqRoundTime(nSec));
+            uniqLabelsSec = unique(larvaeAngleXY(idT,1));
+            
+            %classify the angles in 4 groups as explained in the header (<- ; -> ; ^ ; v )
+            auxLarvInGroups=zeros(length(uniqLabelsSec),4);
+        
+            for nLar = 1:length(uniqLabelsSec)
+                idLar = ismember(larvaeAngleXY(:,1),uniqLabelsSec(nLar));
+                group2 = larvaeAngleXY(idLar & idT,3)>=angThreshold(1) & larvaeAngleXY(idLar & idT,3) < angThreshold(2);  %right
+                group3 = larvaeAngleXY(idLar & idT,3)>=angThreshold(2) & larvaeAngleXY(idLar & idT,3) < angThreshold(3);  %top
+                group1 = larvaeAngleXY(idLar & idT,3)>=angThreshold(3) & larvaeAngleXY(idLar & idT,3) < angThreshold(4);  %left
+                group4 = larvaeAngleXY(idLar & idT,3)>=angThreshold(4) | larvaeAngleXY(idLar & idT,3) < angThreshold(1);  %bottom
+                [~,idGroup]=max([group1,group2,group3,group4]);
+                auxLarvInGroups(nLar,idGroup)=1;
+            end
+        
+            larvaeOrientationPerSec = [uniqLabelsSec,ones(size(uniqLabelsSec)).*uniqRoundTime(nSec),auxLarvInGroups];
+        
+            allLarvaeOrientationXYPerSec=[allLarvaeOrientationXYPerSec;larvaeOrientationPerSec];
+            propLarvInAnglGroup(nSec,:)=sum(auxLarvInGroups,1)/sum(auxLarvInGroups(:));
         end
-    
-        larvaeOrientationPerSec = [uniqLabelsSec,ones(size(uniqLabelsSec)).*uniqRoundTime(nSec),auxLarvInGroups];
-    
-        allLarvaeOrientationXYPerSec=[allLarvaeOrientationXYPerSec;larvaeOrientationPerSec];
-        propLarvInAnglGroup(nSec,:)=sum(auxLarvInGroups,1)/sum(auxLarvInGroups(:));
+        % 
+        % figure;hold on
+        % 
+        % plot(uniqRoundTime,propLarvInAnglGroup(:,1),'-r', 'LineWidth', 2);
+        % plot(uniqRoundTime,propLarvInAnglGroup(:,2),'-b', 'LineWidth', 2);
+        % plot(uniqRoundTime,propLarvInAnglGroup(:,3),'-p', 'LineWidth', 2);
+        % plot(uniqRoundTime,propLarvInAnglGroup(:,4),'-k', 'LineWidth', 2);
+        % legend({'left','right','top','bottom'})
+        
+        
+        [~,idOrd]=sort(allLarvaeOrientationXYPerSec(:,1));
+        orderedAllLarvOrientPerSec=allLarvaeOrientationXYPerSec(idOrd,:);
+    else
+        propLarvInAnglGroup=[];
+        orderedAllLarvOrientPerSec=[];
     end
-    % 
-    % figure;hold on
-    % 
-    % plot(uniqRoundTime,propLarvInAnglGroup(:,1),'-r', 'LineWidth', 2);
-    % plot(uniqRoundTime,propLarvInAnglGroup(:,2),'-b', 'LineWidth', 2);
-    % plot(uniqRoundTime,propLarvInAnglGroup(:,3),'-p', 'LineWidth', 2);
-    % plot(uniqRoundTime,propLarvInAnglGroup(:,4),'-k', 'LineWidth', 2);
-    % legend({'left','right','top','bottom'})
-    
-    
-    [~,idOrd]=sort(allLarvaeOrientationXYPerSec(:,1));
-    orderedAllLarvOrientPerSec=allLarvaeOrientationXYPerSec(idOrd,:);
-
 
 end
