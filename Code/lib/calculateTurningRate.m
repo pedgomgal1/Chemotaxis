@@ -34,12 +34,12 @@ function [statesRunStopTurn,totalAccumAnglePerTurning,totalDurationTurningEvents
         
         independentTurningEvents = bwlabel(isTurning);
         accumAnglePerTurning= arrayfun(@(x) sum(abs(angularDiff(independentTurningEvents==x))),unique(independentTurningEvents(independentTurningEvents>0))) ;
-        events2discard = find(accumAnglePerTurning<accumAngleThreshold);
+        % events2discard = find(accumAnglePerTurning<accumAngleThreshold);
         
-        independentTurningEvents(ismember(independentTurningEvents,events2discard))=0;
+        % independentTurningEvents(ismember(independentTurningEvents,events2discard))=0;
         isTurning(independentTurningEvents==0)=0;
         
-        accumAnglePerTurning(events2discard)=[];
+        % accumAnglePerTurning(events2discard)=[];
         % numberOfTurnings = length(unique(independentTurningEvents))-1;
         durationTurningEvents= arrayfun(@(x) sum((independentTurningEvents==x)),unique(independentTurningEvents(independentTurningEvents>0))) ;
         totalAccumAnglePerTurning=[totalAccumAnglePerTurning;accumAnglePerTurning];
@@ -69,8 +69,10 @@ function [statesRunStopTurn,totalAccumAnglePerTurning,totalDurationTurningEvents
         % % plot(YPerID([false; isRunning])*10,XPerID([false; isRunning])*10,'*')
         % 
         % plot(YPerID([false; isStopped])*10,XPerID([false; isStopped])*10,'*')
-        % axis equal
-        % hold off 
+        % xlim([0,2000])
+        % ylim([0 2000])
+        % % axis equal
+        % % hold off 
 
 
     end
