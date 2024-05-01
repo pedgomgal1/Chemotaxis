@@ -1,4 +1,4 @@
-function plotBoxChart(Chemotaxis_data,FreeNav_data, colors, category,fontSizeFigure,fontNameFigure,yLabel)
+function stats_tab=plotBoxChart(Chemotaxis_data,FreeNav_data, colors, category,fontSizeFigure,fontNameFigure,yLabel,minMax_Y_val,tickInterval,xTickLabels)
 
 
 % Create the boxplot
@@ -31,19 +31,41 @@ end
 
 
 % Set labels and title
-set(gca, 'XTick', [2,6], 'XTickLabel', {'Chemotaxis','Free Navigation'});
+set(gca, 'XTick', [2,6], 'XTickLabel', xTickLabels);
 ylabel(yLabel);
 
 % Adjust figure properties
 
 grid on;
 set(gca,'XGrid','off')
+set(gca,'Box','off')
 set(gcf, 'Units', 'inches');
 set(gcf, 'Position', [2, 2, 10, 6]); % Adjust width and height as needed
 set(gca, 'FontName', fontNameFigure, 'FontSize', fontSizeFigure);
-set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
-set(findall(gcf,'-property','FontSize'),'FontSize',fontSizeFigure);
+% set(findall(gcf,'-property','FontName'),'FontName',fontNameFigure);
+% set(findall(gcf,'-property','FontSize'),'FontSize',fontSizeFigure);
 
 title(category)
 
+ylim(minMax_Y_val),yticks(minMax_Y_val(1):tickInterval:minMax_Y_val(2))
+
+[stats_WT_G2019S_Chemo]=compareMeansOfMatrices(Chemotaxis_data{1},Chemotaxis_data{2});
+[stats_WT_A53T_Chemo]=compareMeansOfMatrices(Chemotaxis_data{1},Chemotaxis_data{3});
+[stats_WT_G2019S_FreeNav]=compareMeansOfMatrices(FreeNav_data{1},FreeNav_data{2});
+[stats_WT_A53T_FreeNav]=compareMeansOfMatrices(FreeNav_data{1},FreeNav_data{3});
+stats_tab = [stats_WT_G2019S_Chemo;stats_WT_A53T_Chemo;stats_WT_G2019S_FreeNav;stats_WT_A53T_FreeNav];
+
+maxVal = max([max(Chemotaxis_data{1}),max(Chemotaxis_data{2}),max(Chemotaxis_data{3})]);
+paintSignificance(maxVal,tickInterval,stats_WT_G2019S_Chemo.p,[1,2])
+paintSignificance(maxVal+tickInterval,tickInterval,stats_WT_A53T_Chemo.p,[1,3])
+
+maxValFreeNav = max([max(FreeNav_data{1}),max(FreeNav_data{2}),max(FreeNav_data{3})]);
+paintSignificance(maxValFreeNav,tickInterval,stats_WT_G2019S_FreeNav.p,[5,6])
+paintSignificance(maxValFreeNav+tickInterval,tickInterval,stats_WT_A53T_FreeNav.p,[5,7])
+
+
+if iscell(yLabel)
+    yLabel=yLabel{1};
+end
+stats_tab.Properties.RowNames = {[yLabel '_' xTickLabels{1} '_WTvsG2019S'],[yLabel '_' xTickLabels{1} '_WTvsA53T'],[yLabel '_' xTickLabels{2} '_WTvsG2019S'],[yLabel '_' xTickLabels{2} '_WTvsA53T']};
 

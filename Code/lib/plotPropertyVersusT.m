@@ -1,18 +1,23 @@
 function plotPropertyVersusT(T,Control_AvgParamRoundT, Mt1_AvgParamRoundT, Mt2_AvgParamRoundT,...
-    Control_SEMParamRoundT, Mt1_SEMParamRoundT, Mt2_SEMParamRoundT,LineStyle,colours,paintError)
+    Control_SEMParamRoundT, Mt1_SEMParamRoundT, Mt2_SEMParamRoundT,LineStyle,colours,paintError,fontSize,fontName)
     
-    % % fill with zeros
-    % auxZerosT = zeros(size(T'));
-    % Control_AvgParamRoundT = cellfun(@(x) auxZerosT+[zeros(length(auxZerosT)-length(x),1) ; x],Control_AvgParamRoundT,'UniformOutput',false);
+    % fill with nan
+    auxNaNT = nan(size(T'));
+    auxZerosT = zeros(size(T'));
+
+    Control_AvgParamRoundT = cellfun(@(x) auxZerosT+[x;nan(length(auxNaNT)-length(x),1)],Control_AvgParamRoundT,'UniformOutput',false);
+    Mt1_AvgParamRoundT = cellfun(@(x) auxZerosT+[x;nan(length(auxNaNT)-length(x),1)],Mt1_AvgParamRoundT,'UniformOutput',false);
+    Mt2_AvgParamRoundT = cellfun(@(x) auxZerosT+[x;nan(length(auxNaNT)-length(x),1)],Mt2_AvgParamRoundT,'UniformOutput',false);
+
     
-    avgMeanSpeedT_control_Free = mean(Control_AvgParamRoundT,2);
-    avgMeanSpeedT_G2019S_Free = mean(Mt1_AvgParamRoundT,2);
-    avgMeanSpeedT_A53T_Free = mean(Mt2_AvgParamRoundT,2);
+    avgMeanSpeedT_control_Free = mean(cat(2,Control_AvgParamRoundT{:}),2,'omitnan');
+    avgMeanSpeedT_G2019S_Free =  mean(cat(2,Mt1_AvgParamRoundT{:}),2,'omitnan');
+    avgMeanSpeedT_A53T_Free =  mean(cat(2,Mt2_AvgParamRoundT{:}),2,'omitnan');
     
     if strcmp(paintError,'calculateError')
-        avgSemSpeedT_control_Free = std(Control_AvgParamRoundT,[],2);
-        avgSemSpeedT_G2019S_Free = std(Mt1_AvgParamRoundT,[],2);
-        avgSemSpeedT_A53T_Free = std(Mt2_AvgParamRoundT,[],2);
+        avgSemSpeedT_control_Free = std(cat(2,Control_AvgParamRoundT{:}),[],2,'omitnan');
+        avgSemSpeedT_G2019S_Free = std(cat(2,Mt1_AvgParamRoundT{:}),[],2,'omitnan');
+        avgSemSpeedT_A53T_Free = std(cat(2,Mt2_AvgParamRoundT{:}),[],2,'omitnan');
         paintError = 1;
     end
     hold on
@@ -21,9 +26,14 @@ function plotPropertyVersusT(T,Control_AvgParamRoundT, Mt1_AvgParamRoundT, Mt2_A
         if ~isempty(Control_SEMParamRoundT)
             %if we assume having the same number of larvae per time point.
             %This is the way to calculate the "pooled standard error"
-            avgSemSpeedT_control_Free = mean(Control_SEMParamRoundT,2);
-            avgSemSpeedT_G2019S_Free = mean(Mt1_SEMParamRoundT,2);
-            avgSemSpeedT_A53T_Free = mean(Mt2_SEMParamRoundT,2);
+            Control_SEMParamRoundT = cellfun(@(x) auxZerosT+[x;nan(length(auxNaNT)-length(x),1)],Control_SEMParamRoundT,'UniformOutput',false);
+            Mt1_SEMParamRoundT = cellfun(@(x) auxZerosT+[x;nan(length(auxNaNT)-length(x),1)],Mt1_SEMParamRoundT,'UniformOutput',false);
+            Mt2_SEMParamRoundT = cellfun(@(x) auxZerosT+[x;nan(length(auxNaNT)-length(x),1)],Mt2_SEMParamRoundT,'UniformOutput',false);
+
+            avgSemSpeedT_control_Free = mean(cat(2,Control_SEMParamRoundT{:}),2,'omitnan');
+            avgSemSpeedT_G2019S_Free =  mean(cat(2,Mt1_SEMParamRoundT{:}),2,'omitnan');
+            avgSemSpeedT_A53T_Free =  mean(cat(2,Mt2_SEMParamRoundT{:}),2,'omitnan');
+
         end        
         
         curve1_control_Free = avgMeanSpeedT_control_Free + avgSemSpeedT_control_Free;
@@ -54,5 +64,5 @@ function plotPropertyVersusT(T,Control_AvgParamRoundT, Mt1_AvgParamRoundT, Mt2_A
     plot(T,avgMeanSpeedT_G2019S_Free,'Color',[colours(2,:)], 'LineWidth', 1,'LineStyle',LineStyle);
     plot(T,avgMeanSpeedT_A53T_Free,'Color',[colours(3,:)], 'LineWidth', 1,'LineStyle',LineStyle);
     hold off
-    set(gca,'Box', 'on', 'XColor', 'k', 'YColor', 'k');
+    set(gca,'Box', 'on', 'XColor', 'k', 'YColor', 'k','FontName', fontName,'FontSize',fontSize);
 end
