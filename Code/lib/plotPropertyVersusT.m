@@ -35,23 +35,25 @@ function plotPropertyVersusT(T,Control_AvgParamRoundT, Mt1_AvgParamRoundT, Mt2_A
             avgSemSpeedT_A53T_Free =  mean(cat(2,Mt2_SEMParamRoundT{:}),2,'omitnan');
 
         end        
-        
+    end   
+
+    if ~isempty(paintError)
         curve1_control_Free = avgMeanSpeedT_control_Free + avgSemSpeedT_control_Free;
         curve1_control_Free(isnan(curve1_control_Free))=0;
         curve2_control_Free = avgMeanSpeedT_control_Free - avgSemSpeedT_control_Free;
         curve2_control_Free(isnan(curve2_control_Free))=0;
-
+    
         x2=[T,fliplr(T)];
         inBetween = [curve1_control_Free', fliplr(curve2_control_Free')];
         p=fill(x2, inBetween, [colours(1,:)],'FaceAlpha',0.1,'EdgeColor','none');       
-
+    
         curve1_G2019S_Free = avgMeanSpeedT_G2019S_Free + avgSemSpeedT_G2019S_Free;
         curve2_G2019S_Free = avgMeanSpeedT_G2019S_Free - avgSemSpeedT_G2019S_Free;
         curve1_G2019S_Free(isnan(curve1_G2019S_Free))=0;
         curve2_G2019S_Free(isnan(curve2_G2019S_Free))=0;
         inBetween = [curve1_G2019S_Free', fliplr(curve2_G2019S_Free')];
         fill(x2, inBetween, [colours(2,:)],'FaceAlpha',0.1,'EdgeColor','none');
-
+    
         curve1_A53T_Free = avgMeanSpeedT_A53T_Free + avgSemSpeedT_A53T_Free;
         curve2_A53T_Free = avgMeanSpeedT_A53T_Free - avgSemSpeedT_A53T_Free;
         curve1_A53T_Free(isnan(curve1_A53T_Free))=0;
